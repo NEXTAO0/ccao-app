@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "omniroute": {
+      "api": "openai",
+      "name": "OmniRoute",
+      "options": {
+        "apiKey": "sk-f5e0c278f40449e1-100225-9ac08a00",
+        "baseURL": "http://localhost:20128/v1"
+      }
+    }
+  },
+  "plugin": [
+    "./plugins/ECC/.opencode/dist/index.js"
+  ]
+}

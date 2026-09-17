@@ -1,0 +1,17 @@
+{
+  "name": "CCAO — Cloud Controller by NEXTAO",
+  "short_name": "CCAO",
+  "description": "Free predictive cloud cost control for Google Cloud Platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
