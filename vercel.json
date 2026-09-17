@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/check-spend",
-      "schedule": "*/60 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
