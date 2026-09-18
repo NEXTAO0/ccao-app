@@ -11,7 +11,7 @@ export function Footer() {
             <Logo />
           </Link>
           <p className="max-w-xs font-mono text-sm leading-relaxed text-slate-400">
-            CCAO: by NEXTAO. Independent open-source cloud utility.
+            CCAO: by NEXTAO. Open-source cloud utility.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export function Footer() {
       <div className="border-t border-slate-800/70">
         <div className="container-page flex flex-col items-center justify-between gap-3 py-6 text-xs sm:flex-row">
           <p className="text-slate-400">
-            CCAO: by NEXTAO. Independent open-source cloud utility.
+            CCAO: by NEXTAO. Open-source cloud utility.
           </p>
           <div className="flex items-center gap-4">
             <a

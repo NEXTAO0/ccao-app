@@ -4,6 +4,8 @@ import { ArrowUpRight, Github, Terminal } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import ProcessStep from "@/components/ProcessStep";
+import { DeletionToast } from "@/components/DeletionToast";
+import { FAQ } from "@/components/landing/FAQ";
 
 export const metadata: Metadata = {
   title: "Cloud & API Budget Circuit Breaker",
@@ -14,9 +16,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deleted?: string }>;
+}) {
+  const params = await searchParams;
+
   return (
     <div className="flex min-h-dvh flex-col bg-zinc-950 text-zinc-400">
+      <DeletionToast visible={params.deleted === "1"} />
       <Navbar />
       <main className="flex-1">
         <section className="border-b border-zinc-800" aria-labelledby="hero-title">
@@ -105,17 +114,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="faq" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="faq-title">
-          <div className="max-w-2xl border-l-2 border-orange-500 pl-5">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-orange-400">Operator notes</p>
-            <h2 id="faq-title" className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100">
-              What happens at the limit?
-            </h2>
-            <p className="mt-4 text-sm leading-7 text-zinc-400">
-              The configured provider action runs at the threshold: billing is detached for supported cloud budgets, or the selected OpenAI key is revoked. Every event is recorded in the alert log.
-            </p>
-          </div>
-        </section>
+        <FAQ />
 
         <section className="border-t border-zinc-800 bg-zinc-900/30" aria-label="Open source call to action">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center sm:px-6 lg:px-8">

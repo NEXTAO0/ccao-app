@@ -76,13 +76,16 @@ export function DashboardClient({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/dashboard/settings/account" className="btn-secondary" aria-label="Open account settings">
+              <Settings className="h-4 w-4" aria-hidden="true" />
+              Account settings
+            </Link>
             <button
               type="button"
               onClick={() => setShowSetupGuide(true)}
               className="btn-secondary"
               aria-label="Open the setup guide"
             >
-              <Settings className="h-4 w-4" aria-hidden="true" />
               Setup guide
             </button>
             <button
