@@ -14,15 +14,16 @@ export async function GET() {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
+  const admin = getSupabaseAdmin();
   const [gcpResult, openaiResult, awsResult] = await Promise.all([
     supabase
       .from("gcp_accounts")
       .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
-    supabase
+    admin
       .from("openai_accounts")
-      .select("id, account_name, target_api_key, created_at, updated_at")
+      .select("id, account_name, created_at, target_api_key")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -49,7 +50,7 @@ export async function GET() {
       api_key_id: account.target_api_key,
       billing_account_id: "",
       created_at: account.created_at,
-      updated_at: account.updated_at,
+      updated_at: account.created_at,
     }))),
     ...((awsResult.data ?? []).map((account) => ({
       id: account.id,

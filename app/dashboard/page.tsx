@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import type { AlertLog, Budget, CostLog, SpendSnapshot } from "@/lib/types";
 
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const admin = getSupabaseAdmin();
   const [
     { data: budgets },
     { data: gcpAccounts },
@@ -55,9 +57,9 @@ export default async function DashboardPage() {
         .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
-      supabase
+      admin
         .from("openai_accounts")
-        .select("id, account_name, target_api_key, created_at, updated_at")
+        .select("id, account_name, created_at, target_api_key")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
       supabase
@@ -109,7 +111,7 @@ export default async function DashboardPage() {
         api_key_id: account.target_api_key,
         billing_account_id: "",
         created_at: account.created_at,
-        updated_at: account.updated_at,
+        updated_at: account.created_at,
       }))),
       ...((awsAccounts ?? []).map((account) => ({
         id: account.id,
