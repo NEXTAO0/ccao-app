@@ -104,6 +104,8 @@ create table if not exists public.budgets (
   user_id        uuid not null references auth.users (id) on delete cascade,
   provider       text not null default 'gcp' check (provider in ('gcp', 'aws', 'openai')),
   gcp_account_id uuid references public.gcp_accounts (id) on delete cascade,
+  openai_account_id uuid,
+  aws_account_id uuid,
   name           text not null default 'Default budget',
   -- Threshold in the given currency; spend is compared against this.
   threshold_amount numeric(16, 2) not null check (threshold_amount > 0),
@@ -121,6 +123,12 @@ create table if not exists public.budgets (
 
 alter table public.budgets
   add column if not exists provider text not null default 'gcp';
+
+alter table public.budgets
+  add column if not exists openai_account_id uuid;
+
+alter table public.budgets
+  add column if not exists aws_account_id uuid;
 
 alter table public.budgets
   drop constraint if exists budgets_provider_check;

@@ -48,6 +48,8 @@ export interface Budget {
   user_id: string;
   provider: CloudProvider;
   gcp_account_id: string | null;
+  openai_account_id?: string | null;
+  aws_account_id?: string | null;
   name: string;
   threshold_amount: number;
   currency: Currency;

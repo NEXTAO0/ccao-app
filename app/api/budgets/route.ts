@@ -63,13 +63,20 @@ export async function GET() {
 
 interface CreateBudgetBody {
   name?: string;
+  budget_name?: string;
   provider?: "gcp" | "aws" | "openai";
   gcp_account_id?: string | null;
+  openai_account_id?: string | null;
+  openaiAccountId?: string | null;
+  aws_account_id?: string | null;
   threshold_amount?: number | string;
+  dollar_limit?: number | string;
+  amount?: number | string;
   currency?: string;
   auto_kill?: boolean;
   alert_emails?: string[];
   period?: "hourly" | "daily" | "monthly";
+  compare_window?: "hourly" | "daily" | "monthly";
 }
 
 /** POST /api/budgets: create a budget for the signed-in user. */
@@ -90,15 +97,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const threshold = Number(body.threshold_amount);
+  const threshold = Number(body.dollar_limit ?? body.amount ?? body.threshold_amount);
   if (!Number.isFinite(threshold) || threshold <= 0) {
     return NextResponse.json(
-      { error: "threshold_amount must be a positive number." },
+      { error: "amount must be a positive number." },
       { status: 400 }
     );
   }
 
-  const period = body.period ?? "hourly";
+  const period = body.compare_window ?? body.period ?? "hourly";
   if (!["hourly", "daily", "monthly"].includes(period)) {
     return NextResponse.json(
       { error: "period must be hourly, daily or monthly." },
@@ -114,30 +121,70 @@ export async function POST(request: Request) {
     );
   }
 
-  let gcpAccountOwned = true;
-  if (body.gcp_account_id) {
+  const gcpAccountId = provider === "gcp" ? body.gcp_account_id || null : null;
+  const openaiAccountId = provider === "openai"
+    ? body.openai_account_id || body.openaiAccountId || null
+    : null;
+  const awsAccountId = provider === "aws" ? body.aws_account_id || null : null;
+
+  if (provider === "gcp" && gcpAccountId) {
     const { data: account, error } = await supabase
       .from("gcp_accounts")
       .select("id, provider")
-      .eq("id", body.gcp_account_id)
+      .eq("id", gcpAccountId)
       .eq("user_id", user.id)
       .maybeSingle();
-    if (error || !account || account.provider !== provider) gcpAccountOwned = false;
-  } else if (provider !== "gcp") {
-    gcpAccountOwned = false;
+    if (error || !account || account.provider !== "gcp") {
+      return NextResponse.json(
+        { error: "gcp_account_id does not belong to the current user." },
+        { status: 403 }
+      );
+    }
   }
-  if (!gcpAccountOwned) {
-    return NextResponse.json(
-      { error: "gcp_account_id does not belong to the current user." },
-      { status: 403 }
-    );
+
+  if (provider === "openai") {
+    if (!openaiAccountId) {
+      return NextResponse.json({ error: "openai_account_id is required." }, { status: 400 });
+    }
+    const { data: account, error } = await supabase
+      .from("openai_accounts")
+      .select("id")
+      .eq("id", openaiAccountId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (error || !account) {
+      return NextResponse.json(
+        { error: "openai_account_id does not belong to the current user." },
+        { status: 403 }
+      );
+    }
+  }
+
+  if (provider === "aws") {
+    if (!awsAccountId) {
+      return NextResponse.json({ error: "aws_account_id is required." }, { status: 400 });
+    }
+    const { data: account, error } = await supabase
+      .from("aws_accounts")
+      .select("id")
+      .eq("id", awsAccountId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (error || !account) {
+      return NextResponse.json(
+        { error: "aws_account_id does not belong to the current user." },
+        { status: 403 }
+      );
+    }
   }
 
   const payload = {
     user_id: user.id,
-    name: body.name?.trim() || "Default budget",
+    name: body.budget_name?.trim() || body.name?.trim() || "Default budget",
     provider,
-    gcp_account_id: body.gcp_account_id ?? null,
+    gcp_account_id: gcpAccountId,
+    openai_account_id: openaiAccountId,
+    aws_account_id: awsAccountId,
     threshold_amount: threshold,
     currency: body.currency ?? "USD",
     auto_kill: body.auto_kill ?? false,

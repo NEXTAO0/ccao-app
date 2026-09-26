@@ -16,7 +16,7 @@ export function BudgetForm({
   const [form, setForm] = useState({
     name: "",
     provider: "gcp" as "gcp" | "aws" | "openai",
-    gcp_account_id: accounts[0]?.id ?? "",
+    account_id: accounts.find((account) => account.provider === "gcp")?.id ?? "",
     threshold_amount: "100",
     currency: "USD",
     period: "hourly",
@@ -40,12 +40,15 @@ export function BudgetForm({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: form.name,
+        budget_name: form.name,
         provider: form.provider,
-        gcp_account_id: form.gcp_account_id || null,
-        threshold_amount: Number(form.threshold_amount),
+        gcp_account_id: form.provider === "gcp" ? form.account_id || null : null,
+        openai_account_id: form.provider === "openai" ? form.account_id : null,
+        aws_account_id: form.provider === "aws" ? form.account_id : null,
+        amount: Number(form.threshold_amount),
+        dollar_limit: Number(form.threshold_amount),
         currency: form.currency,
-        period: form.period,
+        compare_window: form.period,
         auto_kill: form.auto_kill,
         alert_emails: form.alert_emails
           .split(",")
@@ -108,7 +111,7 @@ export function BudgetForm({
             value={form.provider}
             onChange={(e) => {
               update("provider", e.target.value as "gcp" | "aws" | "openai");
-              update("gcp_account_id", "");
+              update("account_id", "");
               if (e.target.value === "openai") update("currency", "USD");
             }}
           >
@@ -122,8 +125,8 @@ export function BudgetForm({
           <select
             className={inputCls}
             required={form.provider !== "gcp"}
-            value={form.gcp_account_id}
-            onChange={(e) => update("gcp_account_id", e.target.value)}
+            value={form.account_id}
+            onChange={(e) => update("account_id", e.target.value)}
           >
             {providerAccounts.length === 0 && (
               <option value="">No linked {form.provider} account</option>
