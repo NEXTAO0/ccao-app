@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { encryptSecret } from "@/lib/crypto";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { CloudProvider, GcpAccount } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -30,6 +31,12 @@ export async function GET() {
 
 interface CreateAccountBody {
   provider?: CloudProvider;
+  label?: string;
+  account_name?: string;
+  adminApiKey?: string;
+  targetApiKey?: string;
+  target_api_key?: string;
+  targetProjectId?: string;
   project_id?: string;
   name?: string;
   billing_account_id?: string;
@@ -63,6 +70,50 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "provider must be gcp, aws, or openai." }, { status: 400 });
   }
 
+  if (provider === "openai") {
+    const adminApiKey = body.adminApiKey?.trim() || body.admin_api_key?.trim();
+    const accountName = body.label?.trim() || body.account_name?.trim();
+    if (!adminApiKey || !accountName) {
+      return NextResponse.json(
+        { error: "adminApiKey and label or account_name are required for OpenAI accounts." },
+        { status: 400 }
+      );
+    }
+
+    if (!process.env.CRYPTO_SECRET) {
+      console.error("CRYPTO_SECRET is not configured; refusing to store OpenAI credentials.");
+      return NextResponse.json({ error: "Credential encryption is not configured." }, { status: 500 });
+    }
+
+    let encryptedAdminKey: string;
+    try {
+      encryptedAdminKey = encryptSecret(adminApiKey);
+    } catch (error) {
+      console.error("Failed to encrypt OpenAI credentials.", error);
+      return NextResponse.json({ error: "Failed to secure OpenAI credentials." }, { status: 500 });
+    }
+
+    try {
+      const admin = getSupabaseAdmin();
+      const { data, error } = await admin.from("openai_accounts").insert({
+        user_id: user.id,
+        account_name: accountName,
+        admin_api_key: encryptedAdminKey,
+        target_api_key: body.targetApiKey?.trim() || body.target_api_key?.trim() || body.targetProjectId?.trim() || null,
+      });
+
+      if (error) {
+        console.error("Failed to create OpenAI account.", error);
+        return NextResponse.json({ error: "Failed to create OpenAI account." }, { status: 500 });
+      }
+
+      return NextResponse.json({ account: data }, { status: 201 });
+    } catch (error) {
+      console.error("Failed to create OpenAI account.", error);
+      return NextResponse.json({ error: "Failed to create OpenAI account." }, { status: 500 });
+    }
+  }
+
   const projectId = body.project_id?.trim() ?? "";
   if (provider === "gcp" && !projectId) {
     return NextResponse.json(
@@ -74,13 +125,6 @@ export async function POST(request: Request) {
   if (provider === "gcp" && (!body.client_email || !body.private_key)) {
     return NextResponse.json(
       { error: "client_email and private_key are required (service-account JSON)." },
-      { status: 400 }
-    );
-  }
-
-  if (provider === "openai" && (!body.admin_api_key?.trim() || !body.api_key_id?.trim())) {
-    return NextResponse.json(
-      { error: "admin_api_key and api_key_id are required for OpenAI accounts." },
       { status: 400 }
     );
   }
@@ -97,9 +141,7 @@ export async function POST(request: Request) {
         client_email: body.client_email?.trim(),
         private_key: body.private_key,
       }))
-    : provider === "openai"
-      ? encryptSecret(body.admin_api_key!.trim())
-      : "";
+    : "";
 
   const { data, error } = await supabase
     .from("gcp_accounts")
