@@ -146,7 +146,7 @@ function AddProjectForm({
       return;
     }
     setDone(true);
-    setTimeout(onSaved, 400);
+    onSaved();
   }
 
   return (

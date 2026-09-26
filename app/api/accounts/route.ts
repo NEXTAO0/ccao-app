@@ -14,19 +14,55 @@ export async function GET() {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from("gcp_accounts")
-    .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [gcpResult, openaiResult, awsResult] = await Promise.all([
+    supabase
+      .from("gcp_accounts")
+      .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("openai_accounts")
+      .select("id, account_name, target_api_key, created_at, updated_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("aws_accounts")
+      .select("id, account_name, account_id, created_at, updated_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
 
-  if (error) {
+  if (gcpResult.error) {
     return NextResponse.json(
       { error: "Failed to load cloud accounts." },
       { status: 500 }
     );
   }
-  return NextResponse.json({ accounts: data ?? [] });
+
+  const accounts = [
+    ...(gcpResult.data ?? []),
+    ...((openaiResult.data ?? []).map((account) => ({
+      id: account.id,
+      provider: "openai" as const,
+      name: account.account_name,
+      project_id: account.target_api_key ?? "",
+      api_key_id: account.target_api_key,
+      billing_account_id: "",
+      created_at: account.created_at,
+      updated_at: account.updated_at,
+    }))),
+    ...((awsResult.data ?? []).map((account) => ({
+      id: account.id,
+      provider: "aws" as const,
+      name: account.account_name,
+      project_id: account.account_id,
+      billing_account_id: "",
+      created_at: account.created_at,
+      updated_at: account.updated_at,
+    }))),
+  ].sort((left, right) => right.created_at.localeCompare(left.created_at));
+
+  return NextResponse.json({ accounts });
 }
 
 interface CreateAccountBody {

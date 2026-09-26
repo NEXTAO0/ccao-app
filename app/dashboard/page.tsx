@@ -37,7 +37,13 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [{ data: budgets }, { data: accounts }, { data: alerts }] =
+  const [
+    { data: budgets },
+    { data: gcpAccounts },
+    { data: openaiAccounts },
+    { data: awsAccounts },
+    { data: alerts },
+  ] =
     await Promise.all([
       supabase
         .from("budgets")
@@ -47,6 +53,16 @@ export default async function DashboardPage() {
       supabase
         .from("gcp_accounts")
         .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("openai_accounts")
+        .select("id, account_name, target_api_key, created_at, updated_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("aws_accounts")
+        .select("id, account_name, account_id, created_at, updated_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
       supabase
@@ -83,7 +99,28 @@ export default async function DashboardPage() {
 
   const data: DashboardData = {
     budgets: withSpend,
-    accounts: (accounts as AccountSummary[]) ?? [],
+    accounts: [
+      ...((gcpAccounts as AccountSummary[] | null) ?? []),
+      ...((openaiAccounts ?? []).map((account) => ({
+        id: account.id,
+        provider: "openai" as const,
+        name: account.account_name,
+        project_id: account.target_api_key ?? "",
+        api_key_id: account.target_api_key,
+        billing_account_id: "",
+        created_at: account.created_at,
+        updated_at: account.updated_at,
+      }))),
+      ...((awsAccounts ?? []).map((account) => ({
+        id: account.id,
+        provider: "aws" as const,
+        name: account.account_name,
+        project_id: account.account_id,
+        billing_account_id: "",
+        created_at: account.created_at,
+        updated_at: account.updated_at,
+      }))),
+    ].sort((left, right) => right.created_at.localeCompare(left.created_at)),
     alerts: (alerts as AlertLog[]) ?? [],
   };
 
