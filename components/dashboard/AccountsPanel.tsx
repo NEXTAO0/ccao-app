@@ -123,10 +123,20 @@ function AddProjectForm({
     setError(null);
     setDone(false);
 
+    const payload = form.provider === "openai"
+      ? {
+          provider: "openai",
+          label: form.name,
+          account_name: form.name,
+          adminApiKey: form.admin_api_key,
+          targetApiKey: form.api_key_id,
+        }
+      : form;
+
     const res = await fetch("/api/accounts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     setBusy(false);

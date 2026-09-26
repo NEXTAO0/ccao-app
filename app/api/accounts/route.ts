@@ -33,7 +33,9 @@ interface CreateAccountBody {
   provider?: CloudProvider;
   label?: string;
   account_name?: string;
+  accountLabel?: string;
   adminApiKey?: string;
+  apiKey?: string;
   targetApiKey?: string;
   target_api_key?: string;
   targetProjectId?: string;
@@ -71,8 +73,9 @@ export async function POST(request: Request) {
   }
 
   if (provider === "openai") {
-    const adminApiKey = body.adminApiKey?.trim() || body.admin_api_key?.trim();
-    const accountName = body.label?.trim() || body.account_name?.trim();
+    const adminApiKey = body.adminApiKey?.trim() || body.admin_api_key?.trim() || body.apiKey?.trim();
+    const accountName = body.label?.trim() || body.account_name?.trim() || body.accountLabel?.trim();
+    const targetApiKey = body.targetApiKey?.trim() || body.target_api_key?.trim() || body.targetProjectId?.trim() || null;
     if (!adminApiKey || !accountName) {
       return NextResponse.json(
         { error: "adminApiKey and label or account_name are required for OpenAI accounts." },
@@ -99,7 +102,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         account_name: accountName,
         admin_api_key: encryptedAdminKey,
-        target_api_key: body.targetApiKey?.trim() || body.target_api_key?.trim() || body.targetProjectId?.trim() || null,
+        target_api_key: targetApiKey,
       });
 
       if (error) {
