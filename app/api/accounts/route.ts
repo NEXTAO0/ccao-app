@@ -161,7 +161,8 @@ export async function POST(request: Request) {
   }
 
   if (provider === "gcp") {
-    const label = body.label?.trim() || body.account_name?.trim() || body.accountLabel?.trim() || body.name?.trim();
+    const accountLabel = body.label || body.account_name || body.accountLabel;
+    const label = accountLabel?.trim() || body.name?.trim();
     const gcpProjectId = body.gcpProjectId?.trim()
       || body.gcp_project_id?.trim()
       || body.projectId?.trim()
@@ -200,11 +201,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const gcpPayload: Record<string, any> = {
+    const gcpPayload: Record<string, unknown> = {
       user_id: user.id,
-      account_name: label,
-      gcp_project_id: gcpProjectId,
-      service_account_key: encryptedKey,
+      provider: "gcp",
+      name: label,
+      project_id: gcpProjectId,
+      credentials_encrypted: encryptedKey,
+      billing_account_id: body.billing_account_id?.trim() ?? "",
     };
     const apiKeyId = targetApiKey || body.api_key_id?.trim();
     if (apiKeyId) {
@@ -215,11 +218,11 @@ export async function POST(request: Request) {
     const { data, error } = await supabaseAdmin
       .from("gcp_accounts")
       .insert(gcpPayload)
-      .select("*")
+      .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
       .single();
 
     if (error) {
-      console.error("[api/accounts] GCP DB insert error:", error);
+      console.error("[api/accounts] GCP insert failed:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
