@@ -200,18 +200,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const gcpRecord = {
+    const gcpPayload: Record<string, any> = {
       user_id: user.id,
       account_name: label,
       gcp_project_id: gcpProjectId,
-      api_key_id: targetApiKey || gcpProjectId || null,
       service_account_key: encryptedKey,
     };
+    const apiKeyId = targetApiKey || body.api_key_id?.trim();
+    if (apiKeyId) {
+      gcpPayload.api_key_id = apiKeyId;
+    }
 
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin
       .from("gcp_accounts")
-      .insert(gcpRecord)
+      .insert(gcpPayload)
       .select("*")
       .single();
 
