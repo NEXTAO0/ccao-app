@@ -167,6 +167,9 @@ export async function POST(request: Request) {
       || body.projectId?.trim()
       || body.targetApiKey?.trim()
       || body.project_id?.trim();
+    const targetApiKey = body.targetApiKey?.trim()
+      || body.target_api_key?.trim()
+      || body.api_key_id?.trim();
     const serviceAccountKey = body.serviceAccountKey
       || body.service_account_key
       || body.credentials
@@ -197,19 +200,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const gcpRecord = {
+      user_id: user.id,
+      account_name: label,
+      gcp_project_id: gcpProjectId,
+      api_key_id: targetApiKey || gcpProjectId || null,
+      service_account_key: encryptedKey,
+    };
+
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin
       .from("gcp_accounts")
-      .insert({
-        user_id: user.id,
-        provider: "gcp",
-        name: label,
-        project_id: gcpProjectId,
-        credentials_encrypted: encryptedKey,
-        api_key_id: body.api_key_id?.trim() ?? null,
-        billing_account_id: body.billing_account_id?.trim() ?? "",
-      })
-      .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
+      .insert(gcpRecord)
+      .select("*")
       .single();
 
     if (error) {
