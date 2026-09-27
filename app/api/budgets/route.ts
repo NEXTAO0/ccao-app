@@ -65,10 +65,12 @@ export async function GET() {
 interface CreateBudgetBody {
   name?: string;
   budget_name?: string;
-  provider?: "gcp" | "aws" | "openai";
+  provider?: string;
   gcp_account_id?: string | null;
   openai_account_id?: string | null;
   openaiAccountId?: string | null;
+  account_id?: string | null;
+  accountId?: string | null;
   aws_account_id?: string | null;
   threshold_amount?: number | string;
   dollar_limit?: number | string;
@@ -114,7 +116,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const provider = body.provider;
+  const provider = body.provider?.toLowerCase();
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
       { error: "provider must be gcp, aws, or openai." },
@@ -124,7 +126,7 @@ export async function POST(request: Request) {
 
   const gcpAccountId = provider === "gcp" ? body.gcp_account_id || null : null;
   const openaiAccountId = provider === "openai"
-    ? body.openai_account_id || body.openaiAccountId || null
+    ? body.openai_account_id || body.openaiAccountId || body.account_id || body.accountId || null
     : null;
   const awsAccountId = provider === "aws" ? body.aws_account_id || null : null;
 
