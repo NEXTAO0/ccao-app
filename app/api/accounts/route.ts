@@ -166,6 +166,7 @@ export async function POST(request: Request) {
     const gcpProjectId = body.gcpProjectId?.trim()
       || body.gcp_project_id?.trim()
       || body.projectId?.trim()
+      || body.targetApiKey?.trim()
       || body.project_id?.trim();
     const serviceAccountKey = body.serviceAccountKey
       || body.service_account_key
@@ -201,6 +202,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       account_name: label,
       gcp_project_id: gcpProjectId,
+      project_id: gcpProjectId,
       service_account_key: encryptedKey,
     };
 
