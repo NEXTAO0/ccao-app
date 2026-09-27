@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Budget, CostLog, SpendSnapshot } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const provider = body.provider ?? "gcp";
+  const provider = body.provider;
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
       { error: "provider must be gcp, aws, or openai." },
@@ -127,67 +128,78 @@ export async function POST(request: Request) {
     : null;
   const awsAccountId = provider === "aws" ? body.aws_account_id || null : null;
 
-  if (provider === "gcp" && gcpAccountId) {
-    const { data: account, error } = await supabase
-      .from("gcp_accounts")
-      .select("id, provider")
-      .eq("id", gcpAccountId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (error || !account || account.provider !== "gcp") {
-      return NextResponse.json(
-        { error: "gcp_account_id does not belong to the current user." },
-        { status: 403 }
-      );
+  switch (provider) {
+    case "gcp": {
+      if (gcpAccountId) {
+        const { data: account, error } = await supabase
+          .from("gcp_accounts")
+          .select("id, provider")
+          .eq("id", gcpAccountId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (error || !account || account.provider !== "gcp") {
+          return NextResponse.json(
+            { error: "gcp_account_id does not belong to the current user." },
+            { status: 403 }
+          );
+        }
+      }
+      break;
+    }
+    case "openai": {
+      if (!openaiAccountId) {
+        return NextResponse.json(
+          { error: "openai_account_id is required." },
+          { status: 400 }
+        );
+      }
+      const { data: account, error } = await getSupabaseAdmin()
+        .from("openai_accounts")
+        .select("id")
+        .eq("id", openaiAccountId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error || !account) {
+        return NextResponse.json(
+          { error: "openai_account_id does not belong to the current user." },
+          { status: 403 }
+        );
+      }
+      break;
+    }
+    case "aws": {
+      if (!awsAccountId) {
+        return NextResponse.json(
+          { error: "aws_account_id is required." },
+          { status: 400 }
+        );
+      }
+      const { data: account, error } = await supabase
+        .from("aws_accounts")
+        .select("id")
+        .eq("id", awsAccountId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error || !account) {
+        return NextResponse.json(
+          { error: "aws_account_id does not belong to the current user." },
+          { status: 403 }
+        );
+      }
+      break;
     }
   }
 
-  if (provider === "openai") {
-    if (!openaiAccountId) {
-      return NextResponse.json({ error: "openai_account_id is required." }, { status: 400 });
-    }
-    const { data: account, error } = await supabase
-      .from("openai_accounts")
-      .select("id")
-      .eq("id", openaiAccountId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (error || !account) {
-      return NextResponse.json(
-        { error: "openai_account_id does not belong to the current user." },
-        { status: 403 }
-      );
-    }
-  }
-
-  if (provider === "aws") {
-    if (!awsAccountId) {
-      return NextResponse.json({ error: "aws_account_id is required." }, { status: 400 });
-    }
-    const { data: account, error } = await supabase
-      .from("aws_accounts")
-      .select("id")
-      .eq("id", awsAccountId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (error || !account) {
-      return NextResponse.json(
-        { error: "aws_account_id does not belong to the current user." },
-        { status: 403 }
-      );
-    }
-  }
-
-  const payload = {
+  const budgetPayload = {
     user_id: user.id,
     name: body.budget_name?.trim() || body.name?.trim() || "Default budget",
     provider,
-    gcp_account_id: gcpAccountId,
-    openai_account_id: openaiAccountId,
-    aws_account_id: awsAccountId,
+    gcp_account_id: provider === "gcp" ? gcpAccountId : null,
+    openai_account_id: provider === "openai" ? openaiAccountId : null,
+    aws_account_id: provider === "aws" ? awsAccountId : null,
     threshold_amount: threshold,
-    currency: body.currency ?? "USD",
-    auto_kill: body.auto_kill ?? false,
+    currency: body.currency || "USD",
+    auto_kill: Boolean(body.auto_kill),
     alert_emails: Array.isArray(body.alert_emails)
       ? body.alert_emails.map((e) => e.trim()).filter(Boolean)
       : [],
@@ -197,7 +209,7 @@ export async function POST(request: Request) {
 
   const { data: created, error } = await supabase
     .from("budgets")
-    .insert(payload)
+    .insert(budgetPayload)
     .select("*")
     .single();
 
