@@ -73,8 +73,14 @@ interface CreateAccountBody {
   accountLabel?: string;
   adminApiKey?: string;
   apiKey?: string;
+  serviceAccountKey?: string | Record<string, unknown> | null;
+  service_account_key?: string | Record<string, unknown> | null;
+  credentials?: string | Record<string, unknown> | null;
   targetApiKey?: string;
   target_api_key?: string;
+  gcpProjectId?: string;
+  gcp_project_id?: string;
+  projectId?: string;
   targetProjectId?: string;
   project_id?: string;
   name?: string;
@@ -154,20 +160,67 @@ export async function POST(request: Request) {
     }
   }
 
-  const projectId = body.project_id?.trim() ?? "";
-  if (provider === "gcp" && !projectId) {
-    return NextResponse.json(
-      { error: "project_id is required." },
-      { status: 400 }
-    );
+  if (provider === "gcp") {
+    const label = body.label?.trim() || body.account_name?.trim() || body.accountLabel?.trim() || body.name?.trim();
+    const gcpProjectId = body.gcpProjectId?.trim()
+      || body.gcp_project_id?.trim()
+      || body.projectId?.trim()
+      || body.targetApiKey?.trim()
+      || body.project_id?.trim();
+    const serviceAccountKey = body.serviceAccountKey
+      || body.service_account_key
+      || body.credentials
+      || body.adminApiKey
+      || (body.client_email && body.private_key
+        ? { client_email: body.client_email.trim(), private_key: body.private_key }
+        : null);
+
+    if (!label || !gcpProjectId || !serviceAccountKey) {
+      return NextResponse.json(
+        { error: "Account label, GCP Project ID, and Service Account Key are required for GCP accounts." },
+        { status: 400 }
+      );
+    }
+
+    const keyPlaintext = typeof serviceAccountKey === "object"
+      ? JSON.stringify(serviceAccountKey)
+      : serviceAccountKey;
+
+    let encryptedKey: string;
+    try {
+      encryptedKey = encryptSecret(keyPlaintext);
+    } catch (error) {
+      console.error("[api/accounts] GCP credential encryption error:", error);
+      return NextResponse.json(
+        { error: "Credential encryption is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from("gcp_accounts")
+      .insert({
+        user_id: user.id,
+        provider: "gcp",
+        name: label,
+        project_id: gcpProjectId,
+        credentials_encrypted: encryptedKey,
+        api_key_id: body.api_key_id?.trim() ?? null,
+        billing_account_id: body.billing_account_id?.trim() ?? "",
+      })
+      .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
+      .single();
+
+    if (error) {
+      console.error("[api/accounts] GCP DB insert error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data, account: data }, { status: 201 });
   }
 
-  if (provider === "gcp" && (!body.client_email || !body.private_key)) {
-    return NextResponse.json(
-      { error: "client_email and private_key are required (service-account JSON)." },
-      { status: 400 }
-    );
-  }
+  const projectId = body.project_id?.trim() ?? "";
 
   if (body.api_key_id && !/^[A-Za-z0-9_-]+$/.test(body.api_key_id.trim())) {
     return NextResponse.json(
@@ -176,13 +229,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const encrypted = provider === "gcp"
-    ? encryptSecret(JSON.stringify({
-        client_email: body.client_email?.trim(),
-        private_key: body.private_key,
-      }))
-    : "";
-
   const { data, error } = await supabase
     .from("gcp_accounts")
     .insert({
@@ -190,7 +236,7 @@ export async function POST(request: Request) {
       provider,
       project_id: projectId,
       name: body.name?.trim() || projectId || body.api_key_id?.trim() || provider,
-      credentials_encrypted: encrypted,
+      credentials_encrypted: "",
       api_key_id: body.api_key_id?.trim() ?? null,
       billing_account_id: body.billing_account_id?.trim() ?? "",
     })
