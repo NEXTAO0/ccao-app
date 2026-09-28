@@ -196,13 +196,19 @@ export async function POST(request: Request) {
       break;
     }
     case "aws": {
-      const { data: account, error } = await supabase
+      const { data: account, error } = await getSupabaseAdmin()
         .from("aws_accounts")
-        .select("id")
+        .select("id, user_id")
         .eq("id", awsAccountId)
-        .eq("user_id", user.id)
         .maybeSingle();
-      if (error || !account) {
+      if (error) {
+        console.error("[api/budgets] AWS account lookup failed:", error);
+        return NextResponse.json(
+          { error: "Failed to validate AWS account." },
+          { status: 500 }
+        );
+      }
+      if (!account || account.user_id !== user.id) {
         return NextResponse.json(
           { error: "aws_account_id does not belong to the current user." },
           { status: 403 }
