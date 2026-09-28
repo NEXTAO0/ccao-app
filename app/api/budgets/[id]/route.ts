@@ -99,7 +99,7 @@ export async function DELETE(_request: Request, { params }: Params) {
 
   const { id } = await params;
 
-  const { error, count } = await supabase
+  const { data, error } = await supabase
     .from("budgets")
     .delete()
     .eq("id", id)
@@ -112,7 +112,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       { status: 500 }
     );
   }
-  if (!count) {
+  if (!data?.length) {
     return NextResponse.json(
       { error: "Budget not found or not owned by the current user." },
       { status: 404 }
