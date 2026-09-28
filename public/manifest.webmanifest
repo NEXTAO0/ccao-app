@@ -4,8 +4,8 @@
   "description": "Free predictive cloud cost control for Google Cloud Platform.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
     {
       "src": "/icon.svg",

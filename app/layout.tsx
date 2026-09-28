@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@/components/Analytics";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -52,6 +52,10 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
   },
   manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
