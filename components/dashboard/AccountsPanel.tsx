@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, Check, Cloud, KeyRound, Loader2, Plus } from "lucide-react";
+import { AlertCircle, Check, Cloud, KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
 
 interface Account {
   id: string;
@@ -21,6 +21,30 @@ export function AccountsPanel({
   onChanged: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
+  const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
+  const [accountError, setAccountError] = useState<string | null>(null);
+
+  async function unlinkAccount(account: Account) {
+    if (!window.confirm(`Unlink ${account.name}? Budgets linked to this account will also be deleted.`)) {
+      return;
+    }
+
+    setDeletingAccountId(account.id);
+    setAccountError(null);
+    try {
+      const response = await fetch(`/api/accounts/${account.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        setAccountError(body?.error ?? "Unable to unlink account.");
+        return;
+      }
+      onChanged();
+    } catch {
+      setAccountError("Unable to unlink account. Check your connection and try again.");
+    } finally {
+      setDeletingAccountId(null);
+    }
+  }
 
   return (
     <section className="space-y-6" aria-label="Cloud and API accounts">
@@ -37,6 +61,11 @@ export function AccountsPanel({
       </div>
 
       {showForm && <AddProjectForm onSaved={() => { setShowForm(false); onChanged(); }} />}
+      {accountError && (
+        <p role="alert" className="rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-400">
+          {accountError}
+        </p>
+      )}
 
       {accounts.length === 0 ? (
         <div className="card p-10 text-center">
@@ -62,10 +91,26 @@ export function AccountsPanel({
                     </p>
                   </div>
                 </div>
-                <span className="chip">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden="true" />
-                  active
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="chip">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden="true" />
+                    active
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => unlinkAccount(account)}
+                    disabled={deletingAccountId !== null}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-zinc-400 transition hover:bg-rose-500/10 hover:text-rose-400 disabled:opacity-50"
+                    aria-label={`Unlink ${account.name}`}
+                    title="Unlink account"
+                  >
+                    {deletingAccountId === account.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="mt-4 space-y-1.5 border-t border-zinc-800 pt-3 text-xs text-zinc-400">
                 <p>
