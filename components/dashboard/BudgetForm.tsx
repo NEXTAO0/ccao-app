@@ -61,7 +61,7 @@ export function BudgetForm({
         .filter(Boolean),
     };
 
-    console.log("[Budget Form] Submitting payload:", payload);
+    console.log("Submitting budget payload:", payload);
     const res = await fetch("/api/budgets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

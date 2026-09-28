@@ -72,6 +72,7 @@ interface CreateBudgetBody {
   awsAccountId?: string | null;
   account_id?: string | null;
   accountId?: string | null;
+  aws_account?: string | { id?: string | null } | null;
   account?: string | { id?: string | null } | null;
   aws_account_id?: string | null;
   threshold_amount?: number | string;
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
-  console.log("[api/budgets] Received body:", JSON.stringify(body));
+  console.log("[POST /api/budgets] body:", body);
 
   const threshold = Number(body.dollar_limit ?? body.amount ?? body.threshold_amount);
   if (!Number.isFinite(threshold) || threshold <= 0) {
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
   }
 
   const rawProvider = (body.provider || "").toLowerCase();
-  const isAws = rawProvider.includes("aws") || rawProvider.includes("amazon");
+  const isAws = rawProvider === "aws" || rawProvider.includes("amazon");
   const provider = isAws ? "aws" : rawProvider;
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
@@ -133,17 +134,22 @@ export async function POST(request: Request) {
   const openaiAccountId = provider === "openai"
     ? body.openai_account_id || body.openaiAccountId || body.account_id || body.accountId || null
     : null;
-  const awsAccountId =
+  const awsAccountValue =
     body.aws_account_id ||
     body.awsAccountId ||
     body.account_id ||
     body.accountId ||
-    (typeof body.account === "string" ? body.account : body.account?.id) ||
+    body.aws_account ||
+    body.account ||
     null;
+  const awsAccountId = typeof awsAccountValue === "string"
+    ? awsAccountValue
+    : awsAccountValue?.id || null;
 
   if (isAws && !awsAccountId) {
+    console.error("[api/budgets] Missing AWS Account ID in body:", body);
     return NextResponse.json(
-      { error: "aws_account_id is required." },
+      { error: "aws_account_id is required. Received payload had no valid account ID." },
       { status: 400 }
     );
   }
