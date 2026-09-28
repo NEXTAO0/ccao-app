@@ -36,12 +36,13 @@ export function BudgetForm({
     setError(null);
     setDone(false);
 
+    const selectedAwsAccountId = form.provider === "aws" ? form.account_id : null;
     const payload = {
       budget_name: form.name,
       provider: form.provider,
       gcp_account_id: form.provider === "gcp" ? form.account_id || null : null,
       openai_account_id: form.provider === "openai" ? form.account_id : null,
-      aws_account_id: form.provider === "aws" ? form.account_id : null,
+      aws_account_id: selectedAwsAccountId,
       amount: Number(form.threshold_amount),
       dollar_limit: Number(form.threshold_amount),
       currency: form.currency,

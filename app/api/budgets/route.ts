@@ -69,6 +69,7 @@ interface CreateBudgetBody {
   gcp_account_id?: string | null;
   openai_account_id?: string | null;
   openaiAccountId?: string | null;
+  awsAccountId?: string | null;
   account_id?: string | null;
   accountId?: string | null;
   aws_account_id?: string | null;
@@ -116,7 +117,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const provider = body.provider?.toLowerCase();
+  const requestedProvider = body.provider?.toLowerCase();
+  const provider = requestedProvider === "amazon web services (aws)"
+    ? "aws"
+    : requestedProvider;
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
       { error: "provider must be gcp, aws, or openai." },
@@ -128,7 +132,9 @@ export async function POST(request: Request) {
   const openaiAccountId = provider === "openai"
     ? body.openai_account_id || body.openaiAccountId || body.account_id || body.accountId || null
     : null;
-  const awsAccountId = provider === "aws" ? body.aws_account_id || null : null;
+  const awsAccountId = provider === "aws"
+    ? body.aws_account_id || body.awsAccountId || body.account_id || body.accountId || null
+    : null;
 
   switch (provider) {
     case "gcp": {
