@@ -72,6 +72,7 @@ interface CreateBudgetBody {
   awsAccountId?: string | null;
   account_id?: string | null;
   accountId?: string | null;
+  account?: string | { id?: string | null } | null;
   aws_account_id?: string | null;
   threshold_amount?: number | string;
   dollar_limit?: number | string;
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
+  console.log("[api/budgets] Received body:", JSON.stringify(body));
 
   const threshold = Number(body.dollar_limit ?? body.amount ?? body.threshold_amount);
   if (!Number.isFinite(threshold) || threshold <= 0) {
@@ -118,7 +120,7 @@ export async function POST(request: Request) {
   }
 
   const rawProvider = (body.provider || "").toLowerCase();
-  const isAws = rawProvider === "aws" || rawProvider.includes("amazon");
+  const isAws = rawProvider.includes("aws") || rawProvider.includes("amazon");
   const provider = isAws ? "aws" : rawProvider;
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
@@ -132,7 +134,12 @@ export async function POST(request: Request) {
     ? body.openai_account_id || body.openaiAccountId || body.account_id || body.accountId || null
     : null;
   const awsAccountId =
-    body.aws_account_id || body.awsAccountId || body.account_id || body.accountId || null;
+    body.aws_account_id ||
+    body.awsAccountId ||
+    body.account_id ||
+    body.accountId ||
+    (typeof body.account === "string" ? body.account : body.account?.id) ||
+    null;
 
   if (isAws && !awsAccountId) {
     return NextResponse.json(

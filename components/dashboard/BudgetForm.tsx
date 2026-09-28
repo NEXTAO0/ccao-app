@@ -17,6 +17,7 @@ export function BudgetForm({
     name: "",
     provider: "gcp" as "gcp" | "aws" | "openai",
     account_id: accounts.find((account) => account.provider === "gcp")?.id ?? "",
+    aws_account_id: "",
     threshold_amount: "100",
     currency: "USD",
     period: "hourly",
@@ -36,13 +37,19 @@ export function BudgetForm({
     setError(null);
     setDone(false);
 
-    const selectedAwsAccountId = form.provider === "aws" ? form.account_id : null;
+    const selectedAccountId = form.provider === "aws" ? form.account_id : null;
+    const selectedAccount = providerAccounts.find(
+      (account) => account.id === selectedAccountId
+    )?.id;
+    const selectedAwsAccountId = form.aws_account_id || null;
     const payload = {
       budget_name: form.name,
       provider: form.provider === "aws" ? "aws" : form.provider,
       gcp_account_id: form.provider === "gcp" ? form.account_id || null : null,
       openai_account_id: form.provider === "openai" ? form.account_id : null,
-      aws_account_id: selectedAwsAccountId,
+      aws_account_id: form.provider === "aws"
+        ? selectedAwsAccountId || selectedAccountId || selectedAccount
+        : null,
       amount: Number(form.threshold_amount),
       dollar_limit: Number(form.threshold_amount),
       currency: form.currency,
@@ -54,6 +61,7 @@ export function BudgetForm({
         .filter(Boolean),
     };
 
+    console.log("[Budget Form] Submitting payload:", payload);
     const res = await fetch("/api/budgets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -115,6 +123,7 @@ export function BudgetForm({
             onChange={(e) => {
               update("provider", e.target.value as "gcp" | "aws" | "openai");
               update("account_id", "");
+              update("aws_account_id", "");
               if (e.target.value === "openai") update("currency", "USD");
             }}
           >
@@ -129,7 +138,13 @@ export function BudgetForm({
             className={inputCls}
             required={form.provider !== "gcp"}
             value={form.account_id}
-            onChange={(e) => update("account_id", e.target.value)}
+            onChange={(e) => {
+              const selectedAccountId = e.target.value;
+              update("account_id", selectedAccountId);
+              if (form.provider === "aws") {
+                update("aws_account_id", selectedAccountId);
+              }
+            }}
           >
             {providerAccounts.length === 0 && (
               <option value="">No linked {form.provider} account</option>
