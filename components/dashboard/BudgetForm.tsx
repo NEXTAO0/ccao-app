@@ -36,12 +36,10 @@ export function BudgetForm({
     setError(null);
     setDone(false);
 
-    const selectedAccountId = form.account_id || null;
-    const selectedAccountOptionId = providerAccounts.find(
-      (account) => account.id === selectedAccountId
-    )?.id;
+    const selectedAccount = providerAccounts.find(
+      (account) => account.id === form.account_id
+    )?.id ?? providerAccounts[0]?.id ?? null;
     const normalizedProvider = form.provider.toLowerCase();
-    const selectedAccount = selectedAccountId || selectedAccountOptionId;
     const payload = {
       budget_name: form.name,
       provider: form.provider === "aws" ? "aws" : form.provider,
@@ -123,9 +121,10 @@ export function BudgetForm({
             className={inputCls}
             value={form.provider}
             onChange={(e) => {
-              update("provider", e.target.value as "gcp" | "aws" | "openai");
-              update("account_id", "");
-              if (e.target.value === "openai") update("currency", "USD");
+              const provider = e.target.value as "gcp" | "aws" | "openai";
+              update("provider", provider);
+              update("account_id", accounts.find((account) => account.provider === provider)?.id ?? "");
+              if (provider === "openai") update("currency", "USD");
             }}
           >
             <option value="gcp">Google Cloud (GCP)</option>
