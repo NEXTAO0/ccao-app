@@ -117,10 +117,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const requestedProvider = body.provider?.toLowerCase();
-  const provider = requestedProvider === "amazon web services (aws)"
-    ? "aws"
-    : requestedProvider;
+  const rawProvider = (body.provider || "").toLowerCase();
+  const isAws = rawProvider === "aws" || rawProvider.includes("amazon");
+  const provider = isAws ? "aws" : rawProvider;
   if (provider !== "gcp" && provider !== "aws" && provider !== "openai") {
     return NextResponse.json(
       { error: "provider must be gcp, aws, or openai." },
@@ -132,9 +131,15 @@ export async function POST(request: Request) {
   const openaiAccountId = provider === "openai"
     ? body.openai_account_id || body.openaiAccountId || body.account_id || body.accountId || null
     : null;
-  const awsAccountId = provider === "aws"
-    ? body.aws_account_id || body.awsAccountId || body.account_id || body.accountId || null
-    : null;
+  const awsAccountId =
+    body.aws_account_id || body.awsAccountId || body.account_id || body.accountId || null;
+
+  if (isAws && !awsAccountId) {
+    return NextResponse.json(
+      { error: "aws_account_id is required." },
+      { status: 400 }
+    );
+  }
 
   switch (provider) {
     case "gcp": {
@@ -176,12 +181,6 @@ export async function POST(request: Request) {
       break;
     }
     case "aws": {
-      if (!awsAccountId) {
-        return NextResponse.json(
-          { error: "aws_account_id is required." },
-          { status: 400 }
-        );
-      }
       const { data: account, error } = await supabase
         .from("aws_accounts")
         .select("id")
