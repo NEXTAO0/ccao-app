@@ -74,6 +74,7 @@ interface CreateBudgetBody {
   accountId?: string | null;
   aws_account?: string | { id?: string | null } | null;
   account?: string | { id?: string | null } | null;
+  ""?: string | null;
   aws_account_id?: string | null;
   threshold_amount?: number | string;
   dollar_limit?: number | string;
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
     body.accountId ||
     body.aws_account ||
     body.account ||
+    body[""] ||
     null;
   const awsAccountId = typeof awsAccountValue === "string"
     ? awsAccountValue

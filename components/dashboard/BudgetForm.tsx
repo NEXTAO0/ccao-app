@@ -17,7 +17,6 @@ export function BudgetForm({
     name: "",
     provider: "gcp" as "gcp" | "aws" | "openai",
     account_id: accounts.find((account) => account.provider === "gcp")?.id ?? "",
-    aws_account_id: "",
     threshold_amount: "100",
     currency: "USD",
     period: "hourly",
@@ -37,11 +36,11 @@ export function BudgetForm({
     setError(null);
     setDone(false);
 
-    const selectedAccountId = form.provider === "aws" ? form.account_id : null;
+    const selectedAccountId = form.account_id || null;
     const selectedAccount = providerAccounts.find(
       (account) => account.id === selectedAccountId
     )?.id;
-    const selectedAwsAccountId = form.aws_account_id || null;
+    const selectedAwsAccountId = form.provider === "aws" ? selectedAccountId : null;
     const payload = {
       budget_name: form.name,
       provider: form.provider === "aws" ? "aws" : form.provider,
@@ -123,7 +122,6 @@ export function BudgetForm({
             onChange={(e) => {
               update("provider", e.target.value as "gcp" | "aws" | "openai");
               update("account_id", "");
-              update("aws_account_id", "");
               if (e.target.value === "openai") update("currency", "USD");
             }}
           >
@@ -139,11 +137,7 @@ export function BudgetForm({
             required={form.provider !== "gcp"}
             value={form.account_id}
             onChange={(e) => {
-              const selectedAccountId = e.target.value;
-              update("account_id", selectedAccountId);
-              if (form.provider === "aws") {
-                update("aws_account_id", selectedAccountId);
-              }
+              update("account_id", e.target.value);
             }}
           >
             {providerAccounts.length === 0 && (
