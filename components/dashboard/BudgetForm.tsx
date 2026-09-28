@@ -3,6 +3,14 @@
 import { useState } from "react";
 import { AlertCircle, Check, Loader2, Plus } from "lucide-react";
 
+function getAccountKey(providerStr: string) {
+  const lower = (providerStr || "").toLowerCase();
+  if (lower.includes("aws") || lower.includes("amazon")) return "aws_account_id";
+  if (lower.includes("openai")) return "openai_account_id";
+  if (lower.includes("gcp") || lower.includes("google")) return "gcp_account_id";
+  return "aws_account_id";
+}
+
 export function BudgetForm({
   accounts,
   onSaved,
@@ -40,15 +48,11 @@ export function BudgetForm({
     const selectedAccount = providerAccounts.find(
       (account) => account.id === selectedAccountId
     )?.id;
-    const selectedAwsAccountId = form.provider === "aws" ? selectedAccountId : null;
+    const accountKey = getAccountKey(form.provider);
     const payload = {
       budget_name: form.name,
       provider: form.provider === "aws" ? "aws" : form.provider,
-      gcp_account_id: form.provider === "gcp" ? form.account_id || null : null,
-      openai_account_id: form.provider === "openai" ? form.account_id : null,
-      aws_account_id: form.provider === "aws"
-        ? selectedAwsAccountId || selectedAccountId || selectedAccount
-        : null,
+      [accountKey]: selectedAccountId || selectedAccount || null,
       amount: Number(form.threshold_amount),
       dollar_limit: Number(form.threshold_amount),
       currency: form.currency,
