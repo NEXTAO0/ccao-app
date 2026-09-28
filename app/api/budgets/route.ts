@@ -196,7 +196,32 @@ export async function POST(request: Request) {
       break;
     }
     case "aws": {
-      const { data: account, error } = await getSupabaseAdmin()
+      const admin = getSupabaseAdmin();
+      const { data: linkedAccount, error: linkedAccountError } = await admin
+        .from("gcp_accounts")
+        .select("id, user_id")
+        .eq("id", awsAccountId)
+        .eq("provider", "aws")
+        .maybeSingle();
+
+      if (linkedAccountError) {
+        console.error("[api/budgets] AWS linked-account lookup failed:", linkedAccountError);
+        return NextResponse.json(
+          { error: "Failed to validate AWS account." },
+          { status: 500 }
+        );
+      }
+      if (linkedAccount) {
+        if (linkedAccount.user_id !== user.id) {
+          return NextResponse.json(
+            { error: "aws_account_id does not belong to the current user." },
+            { status: 403 }
+          );
+        }
+        break;
+      }
+
+      const { data: account, error } = await admin
         .from("aws_accounts")
         .select("id, user_id")
         .eq("id", awsAccountId)
