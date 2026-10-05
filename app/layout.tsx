@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Analytics } from "@/components/Analytics";
+import { Analytics as AppAnalytics } from "@/components/Analytics";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 
 // [MANUAL_SETUP_REQUIRED]: Public app URL (lands in email links, sitemap.xml, robots.txt).
 const appUrl: string = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -66,7 +67,7 @@ export default function RootLayout({
       <body className="min-h-dvh font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
-          <Analytics />
+          <AppAnalytics />
         </ThemeProvider>
       </body>
     </html>
