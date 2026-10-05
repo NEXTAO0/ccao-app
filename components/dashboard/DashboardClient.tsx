@@ -23,6 +23,7 @@ import { BudgetCard } from "@/components/dashboard/BudgetCard";
 import { BudgetForm } from "@/components/dashboard/BudgetForm";
 import { AccountsPanel } from "@/components/dashboard/AccountsPanel";
 import { AlertLogList } from "@/components/dashboard/AlertLogList";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Tab = "overview" | "budgets" | "projects" | "alerts";
 
@@ -76,6 +77,7 @@ export function DashboardClient({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link href="/dashboard/settings/account" className="btn-secondary" aria-label="Open account settings">
               <Settings className="h-4 w-4" aria-hidden="true" />
               Account settings

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { Logo } from "@/components/Logo";
 import { LoginPanel } from "@/components/LoginPanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -38,9 +39,12 @@ export default async function LoginPage(props: {
         <Link href="/" aria-label="CCAO home">
           <Logo />
         </Link>
-        <Link href="/" className="text-sm font-semibold text-slate-400 hover:text-slate-100">
-          ← Back to home
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link href="/" className="text-sm font-semibold text-slate-400 hover:text-slate-100">
+            ← Back to home
+          </Link>
+        </div>
       </header>
 
       <section className="container-page relative z-10 flex flex-1 items-center justify-center py-16">

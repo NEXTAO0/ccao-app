@@ -86,7 +86,7 @@ export function BudgetForm({
   }
 
   return (
-    <form onSubmit={submit} className="light card space-y-4 p-6">
+    <form onSubmit={submit} className="card space-y-4 p-6">
       <div className="flex items-center gap-2">
         <Plus className="h-4 w-4 text-orange-400" aria-hidden="true" />
         <h3 className="text-sm font-bold text-card-foreground">New budget</h3>

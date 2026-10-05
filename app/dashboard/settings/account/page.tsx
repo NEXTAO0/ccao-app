@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { AccountSettings } from "@/components/dashboard/AccountSettings";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Account Settings",
@@ -21,10 +22,13 @@ export default async function AccountSettingsPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="container-page py-8 sm:py-12">
-        <Link href="/dashboard" className="btn-secondary w-fit">
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to dashboard
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard" className="btn-secondary w-fit">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Back to dashboard
+          </Link>
+          <ThemeToggle />
+        </div>
         <div className="mt-10 max-w-3xl">
           <p className="section-title">Account</p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">Account settings</h1>

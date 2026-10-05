@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileMenu, type MenuLink } from "@/components/MobileMenu";
 
 const routes: MenuLink[] = [
@@ -33,7 +34,7 @@ export function Navbar() {
   const startLabel = user ? "Go to Dashboard" : "Sign in";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-zinc-950/50 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md transition-all">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" aria-label="CCAO home">
           <Logo />
@@ -52,6 +53,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
           {isLoading ? (
             <div className="h-9 w-32 animate-pulse rounded-md bg-zinc-800" aria-label="Loading authentication status" />
           ) : user ? (
@@ -70,7 +72,8 @@ export function Navbar() {
           )}
         </div>
 
-        <div className="lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
           <MobileMenu
             links={routes}
             ctaHref={user ? startUrl : "/login"}
