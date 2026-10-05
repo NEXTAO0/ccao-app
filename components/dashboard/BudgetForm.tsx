@@ -86,20 +86,20 @@ export function BudgetForm({
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-4 p-6">
+    <form onSubmit={submit} className="light card space-y-4 p-6">
       <div className="flex items-center gap-2">
         <Plus className="h-4 w-4 text-orange-400" aria-hidden="true" />
-        <h3 className="text-sm font-bold text-zinc-100">New budget</h3>
+        <h3 className="text-sm font-bold text-card-foreground">New budget</h3>
       </div>
 
       {error && (
-        <p role="alert" className="flex items-start gap-2 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm font-medium text-orange-400">
+        <p role="alert" className="budget-form-alert flex items-start gap-2 rounded-md border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm font-medium">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           {error}
         </p>
       )}
       {done && (
-        <p role="status" className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-400">
+        <p role="status" className="budget-form-success flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium">
           <Check className="h-4 w-4" aria-hidden="true" />
           Budget created. Cost checks will start sampling it.
         </p>
@@ -155,7 +155,7 @@ export function BudgetForm({
 
         <Field label={form.provider === "openai" ? "OpenAI dollar budget limit ($)" : "Threshold amount"}>
           <input
-            className={`${inputCls} font-mono text-zinc-200`}
+            className={`${inputCls} font-mono`}
             type="number"
             min="0.01"
             step="0.01"
@@ -202,7 +202,7 @@ export function BudgetForm({
         </Field>
       </div>
 
-      <label className="flex items-center gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-4">
+      <label className="flex items-center gap-3 rounded-md border border-border bg-card p-4">
         <input
           type="checkbox"
           className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
@@ -210,8 +210,8 @@ export function BudgetForm({
           onChange={(e) => update("auto_kill", e.target.checked)}
         />
         <span className="text-sm">
-          <span className="font-bold text-zinc-100">Arm Auto-Kill</span>
-          <span className="block text-xs text-zinc-400">
+          <span className="font-bold text-card-foreground">Arm Auto-Kill</span>
+          <span className="block text-xs text-muted-foreground">
             Detach billing from the project when spend reaches the threshold. Enable this only when you want automatic enforcement.
           </span>
         </span>
@@ -230,11 +230,11 @@ export function BudgetForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-semibold text-zinc-400">{label}</span>
+      <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">{label}</span>
       {children}
     </label>
   );
 }
 
 const inputCls =
-  "w-full rounded-md border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20";
+  "w-full rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20";

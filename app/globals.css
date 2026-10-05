@@ -2,9 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --brand: #f97316;
-  --ink: #09090b;
+@layer base {
+  :root,
+  .light {
+    --background: #f4f4f5;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --border: #e4e4e7;
+    --muted: #e4e4e7;
+    --muted-foreground: #52525b;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --status-alert: #c2410c;
+    --status-success: #15803d;
+  }
+
+  .dark {
+    --background: #000000;
+    --foreground: #f4f4f5;
+    --card: #18181b;
+    --card-foreground: #f4f4f5;
+    --border: #27272a;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --popover: #18181b;
+    --popover-foreground: #f4f4f5;
+    --status-alert: #fdba74;
+    --status-success: #6ee7b7;
+  }
+
+  :root,
+  .dark,
+  .light {
+    --primary: #f97316;
+    --primary-foreground: #ffffff;
+    --accent: #f97316;
+    --accent-foreground: #ffffff;
+    --ring: #f97316;
+  }
 }
 
 html {
@@ -12,7 +48,7 @@ html {
 }
 
 body {
-  @apply bg-zinc-950 text-zinc-200 antialiased;
+  @apply bg-background text-foreground antialiased;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
@@ -34,7 +70,34 @@ body {
   }
 
   .card {
-    @apply rounded-lg border border-zinc-800 bg-zinc-900/80;
+    @apply rounded-lg border;
+    border-color: var(--border);
+    background-color: var(--card);
+    color: var(--card-foreground);
+  }
+
+  .glass {
+    @apply rounded-lg border;
+    border-color: color-mix(in srgb, var(--border) 75%, transparent);
+    background-color: color-mix(in srgb, var(--card) 72%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .glass-strong {
+    @apply rounded-lg border;
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+    background-color: color-mix(in srgb, var(--card) 88%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .budget-form-alert {
+    color: var(--status-alert);
+  }
+
+  .budget-form-success {
+    color: var(--status-success);
   }
 
   .chip {
