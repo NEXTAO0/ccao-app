@@ -51,7 +51,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   const id = `faq-${question.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
   return (
-    <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 backdrop-blur-md">
+    <div className="glass mb-4 rounded-xl p-6">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

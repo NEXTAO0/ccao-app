@@ -9,9 +9,9 @@
     --foreground: #000000;
     --card: #ffffff;
     --card-foreground: #000000;
-    --border: #e4e4e7;
+    --border: #a1a1aa;
     --muted: #e4e4e7;
-    --muted-foreground: #52525b;
+    --muted-foreground: #3f3f46;
     --popover: #ffffff;
     --popover-foreground: #000000;
     --status-alert: #c2410c;
@@ -68,15 +68,67 @@
   .light [class~="text-slate-950"] {
     color: #000000;
   }
+
+  .light [class~="border-zinc-800"],
+  .light [class~="border-zinc-800/80"],
+  .light [class~="border-slate-800"],
+  .light [class~="border-slate-800/70"],
+  .light [class~="border-slate-800/80"],
+  .light [class~="divide-zinc-800"] {
+    border-color: #27272a;
+    --tw-divide-opacity: 1;
+  }
+
+  .light [class~="bg-zinc-950"] {
+    background-color: rgb(var(--neutral-950) / 56%) !important;
+  }
 }
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--background);
 }
 
 body {
   @apply bg-background text-foreground antialiased;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.light body {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent;
+  background-image:
+    linear-gradient(rgb(39 39 42 / 3%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(39 39 42 / 3%) 1px, transparent 1px);
+  background-size: 36px 36px;
+  background-attachment: fixed;
+}
+
+.light body::before {
+  content: "";
+  position: fixed;
+  inset: -12rem;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    transparent 24%,
+    rgb(249 115 22 / 34%) 43%,
+    rgb(251 146 60 / 24%) 57%,
+    transparent 78%
+  );
+  filter: blur(72px);
+}
+
+svg.lucide {
+  shape-rendering: geometricPrecision;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
 }
 
 ::selection {
@@ -97,26 +149,23 @@ body {
   }
 
   .card {
-    @apply rounded-lg border;
-    border-color: var(--border);
-    background-color: var(--card);
+    @apply rounded-lg border backdrop-blur-md;
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+    background-color: color-mix(in srgb, var(--card) 78%, transparent) !important;
     color: var(--card-foreground);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 5%), inset 0 1px rgb(255 255 255 / 35%);
   }
 
   .glass {
-    @apply rounded-lg border;
+    @apply rounded-lg border backdrop-blur-md;
     border-color: color-mix(in srgb, var(--border) 75%, transparent);
     background-color: color-mix(in srgb, var(--card) 72%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
   }
 
   .glass-strong {
-    @apply rounded-lg border;
+    @apply rounded-lg border backdrop-blur-xl;
     border-color: color-mix(in srgb, var(--border) 90%, transparent);
     background-color: color-mix(in srgb, var(--card) 88%, transparent);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
   }
 
   .budget-form-alert {

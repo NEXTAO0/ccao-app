@@ -6,9 +6,8 @@ import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { MobileMenu, type MenuLink } from "@/components/MobileMenu";
 
-const routes: MenuLink[] = [
+const routes = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it works" },
   { href: "#faq", label: "FAQ" },
@@ -34,7 +33,7 @@ export function Navbar() {
   const startLabel = user ? "Go to Dashboard" : "Sign in";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-zinc-950/95 backdrop-blur-md transition-all">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" aria-label="CCAO home">
           <Logo />
@@ -52,7 +51,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="flex items-center gap-1 sm:gap-3">
           <ThemeToggle />
           {isLoading ? (
             <div className="h-9 w-32 animate-pulse rounded-md bg-zinc-800" aria-label="Loading authentication status" />
@@ -72,15 +71,6 @@ export function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
-          <ThemeToggle />
-          <MobileMenu
-            links={routes}
-            ctaHref={user ? startUrl : "/login"}
-            ctaLabel={startLabel}
-            ctaLoading={isLoading}
-          />
-        </div>
       </div>
     </header>
   );

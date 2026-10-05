@@ -148,7 +148,7 @@ function TelemetryCard() {
   ];
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 font-mono text-xs shadow-[0_0_0_1px_rgba(255,255,255,0.02)]" aria-label="Simulated provider telemetry">
+    <div className="glass rounded-lg p-4 font-mono text-xs shadow-[0_0_0_1px_rgba(255,255,255,0.02)]" aria-label="Simulated provider telemetry">
         <div className="mb-4 flex items-center justify-between border-b border-zinc-800 pb-3 text-zinc-500">
         <span>ccao://telemetry/mtd</span>
         <span className="text-orange-400">streaming</span>
