@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     .order("created_at", { ascending: true });
 
   if (budgetError) {
-    console.error("[check-spend] failed to load budgets", budgetError);
+    console.error("[check-spend] failed to load budgets");
     return NextResponse.json(
       { error: "Failed to load budgets." },
       { status: 500 }
@@ -192,26 +192,19 @@ async function checkOneBudget(opts: {
         ? await getOpenAiMonthToDateSpend(openaiAdminKey)
         : await fetchCurrentSpend(budget.period, { projectId }, storedCreds);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    const target = provider === "aws"
-      ? "AWS account"
-      : provider === "openai"
-        ? "OpenAI organization"
-        : projectId;
-    console.error(`[check-spend] spend query failed for ${target}:`, message);
+    console.error(`[check-spend] spend query failed for ${provider}`);
     await insertAlert(admin, budget, "error", "warning",
       provider === "aws"
         ? "Could not read AWS spend. Verify the AWS Cost Explorer permissions."
         : provider === "openai"
           ? "Could not read OpenAI spend. Verify the Admin API key and Usage API permissions."
-          : `Could not read spend for ${projectId}. Verify the BigQuery export is enabled.`,
+          : "Could not read GCP spend. Verify the BigQuery export and permissions.",
       {
         reason: provider === "aws"
           ? "aws_cost_explorer_failure"
           : provider === "openai"
             ? "openai_usage_failure"
             : "bigquery_failure",
-        error: message,
       });
   }
 
@@ -262,10 +255,9 @@ async function checkOneBudget(opts: {
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[check-spend] auto-kill failed for ${provider}:`, message);
+      console.error(`[check-spend] provider action failed for ${provider}`);
       killOutcome = "error";
-      disabledDetail = { spend, threshold, error: message };
+      disabledDetail = { spend, threshold, reason: "provider_action_failed" };
     }
 
     const alertType: AlertType =
@@ -394,7 +386,7 @@ async function insertAlert(
     details,
   });
   if (error) {
-    console.error("[check-spend] failed to record alert", error.message);
+    console.error("[check-spend] failed to record alert");
   }
 }
 
@@ -414,12 +406,12 @@ async function insertCostLog(
     source: "bigquery",
   });
   if (error) {
-    console.error("[check-spend] failed to persist cost log", error.message);
+    console.error("[check-spend] failed to persist cost log");
   }
 }
 
 function recipients(budget: Budget): string[] {
-  const all = [...(budget.alert_emails ?? [])];
+  const all = budget.alert_email_consent_at ? [...(budget.alert_emails ?? [])] : [];
   if (defaultAlertEmail && !all.includes(defaultAlertEmail)) {
     all.push(defaultAlertEmail);
   }
@@ -461,7 +453,7 @@ async function sendBreakEmail(
     text: message,
   });
   if (result.error) {
-    console.error("[check-spend] alert email failed", result.error);
+    console.error("[check-spend] alert email delivery failed");
   }
 }
 
@@ -489,7 +481,7 @@ async function sendSpikeEmail(
     text: anomaly.message,
   });
   if (result.error) {
-    console.error("[check-spend] spike email failed", result.error);
+    console.error("[check-spend] anomaly email delivery failed");
   }
 }
 

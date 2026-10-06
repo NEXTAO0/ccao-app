@@ -24,6 +24,7 @@ export function BudgetCard({
   const [busy, setBusy] = useState<"kill" | "delete" | "pause" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [alertEmailConsent, setAlertEmailConsent] = useState(false);
   const [draft, setDraft] = useState({
     name: budget.name,
     threshold_amount: String(budget.threshold_amount),
@@ -77,6 +78,12 @@ export function BudgetCard({
 
   async function saveBudget(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const alertRecipients = draft.alert_emails.split(",").map((email) => email.trim()).filter(Boolean);
+    if (alertRecipients.length > 0 && !alertEmailConsent) {
+      setError("Confirm you have permission to email each alert recipient.");
+      return;
+    }
+
     setBusy("save");
     setError(null);
     try {
@@ -88,7 +95,8 @@ export function BudgetCard({
           threshold_amount: Number(draft.threshold_amount),
           currency: draft.currency,
           period: draft.period,
-          alert_emails: draft.alert_emails.split(",").map((email) => email.trim()).filter(Boolean),
+          alert_emails: alertRecipients,
+          alert_email_consent: alertRecipients.length === 0 || alertEmailConsent,
         }),
       });
       if (!res.ok) {
@@ -290,6 +298,15 @@ export function BudgetCard({
               value={draft.alert_emails}
               onChange={(e) => setDraft((value) => ({ ...value, alert_emails: e.target.value }))}
             />
+          </label>
+          <label className="flex items-start gap-3 text-sm text-zinc-400 sm:col-span-2">
+            <input
+              type="checkbox"
+              checked={alertEmailConsent}
+              onChange={(event) => setAlertEmailConsent(event.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+            />
+            <span>I have permission from each listed recipient to send them budget and anomaly alerts.</span>
           </label>
           <div className="flex justify-end gap-2 sm:col-span-2">
             <button type="button" className="btn-secondary" onClick={() => setEditing(false)} disabled={busy !== null}>

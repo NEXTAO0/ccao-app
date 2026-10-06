@@ -15,10 +15,10 @@ export function Hero() {
         <a
           href="#pricing"
           className="mb-6 inline-flex items-center gap-2 rounded-md border border-emerald-800 bg-emerald-950/40 px-3 py-1.5 font-mono text-xs font-semibold text-emerald-300 transition hover:bg-emerald-950/70"
-          aria-label="Learn about pricing: CCAO is 100% free"
+          aria-label="Read about CCAO licensing and provider costs"
         >
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-          system.status: free / open-source
+          license: MIT / open-source
           <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </a>
 
@@ -34,7 +34,6 @@ export function Hero() {
           <Link href="/dashboard" className="btn-primary px-5 py-2.5 text-sm">
             Launch your dashboard
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            <kbd className="border-l border-orange-300/40 pl-2 font-mono text-[10px] text-orange-100">Ctrl K</kbd>
           </Link>
           <Link href="#how-it-works" className="btn-secondary px-5 py-2.5 text-sm">
             See how it works
@@ -42,7 +41,7 @@ export function Hero() {
         </div>
 
         <p className="mt-4 text-xs text-slate-500">
-          No credit card | Setup in about 10 minutes | Avoid unexpected bills
+          No app subscription checkout | Provider reporting delays may apply
         </p>
 
         <MockDashboardCard />
@@ -55,15 +54,14 @@ function MockDashboardCard() {
   return (
     <div
       className="mt-16 w-full max-w-lg text-left"
-      aria-hidden="true"
       role="img"
-      aria-label="Preview of the CCAO spend dashboard showing a budget breach with auto-kill notification"
+      aria-label="Illustrative dashboard mock with sample values and a simulated alert; it is not connected to live accounts"
     >
       <div className="card p-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Current spend · last 24h
+              Example spend · sample only
             </p>
             <p className="mt-1 font-mono text-2xl font-extrabold tracking-tight text-slate-100">
               $1,284.90
@@ -101,13 +99,12 @@ function MockDashboardCard() {
             <TrendingUp className="h-4 w-4" aria-hidden="true" />
           </span>
           <p className="text-sm font-medium text-red-200">
-            Threshold crossed. Billing has been <strong>detached</strong>. Alert emailed to
-            eng@acme.io at 14:32.
+            Example threshold event. A provider action may be attempted after a scheduled check.
           </p>
         </div>
 
         <div className="mt-4 flex items-center justify-between rounded-md border border-emerald-800 bg-emerald-950/50 px-4 py-3 font-mono text-xs font-semibold text-emerald-200">
-          <span><span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />monitor: active / &lt;60s</span>
+          <span><span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />sample only / not live</span>
           <Check className="h-4 w-4" aria-hidden="true" />
         </div>
       </div>

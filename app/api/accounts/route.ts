@@ -89,6 +89,7 @@ interface CreateAccountBody {
   private_key?: string;
   admin_api_key?: string;
   api_key_id?: string;
+  data_handling_consent?: boolean;
 }
 
 /**
@@ -108,6 +109,13 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  if (body.data_handling_consent !== true) {
+    return NextResponse.json(
+      { error: "Confirm authorization and data handling before linking an account." },
+      { status: 400 }
+    );
   }
 
   const provider = body.provider ?? "gcp";
@@ -135,7 +143,7 @@ export async function POST(request: Request) {
     try {
       encryptedAdminKey = encryptSecret(adminApiKey);
     } catch (error) {
-      console.error("Failed to encrypt OpenAI credentials.", error);
+      console.error("Failed to encrypt OpenAI credentials.");
       return NextResponse.json({ error: "Failed to secure OpenAI credentials." }, { status: 500 });
     }
 
@@ -149,13 +157,13 @@ export async function POST(request: Request) {
       });
 
       if (error) {
-        console.error("Failed to create OpenAI account.", error);
+        console.error("Failed to create OpenAI account.");
         return NextResponse.json({ error: "Failed to create OpenAI account." }, { status: 500 });
       }
 
       return NextResponse.json({ account: data }, { status: 201 });
     } catch (error) {
-      console.error("Failed to create OpenAI account.", error);
+      console.error("Failed to create OpenAI account.");
       return NextResponse.json({ error: "Failed to create OpenAI account." }, { status: 500 });
     }
   }
@@ -191,7 +199,7 @@ export async function POST(request: Request) {
     try {
       encryptedKey = encryptSecret(keyPlaintext);
     } catch (error) {
-      console.error("[api/accounts] GCP credential encryption error:", error);
+      console.error("[api/accounts] GCP credential encryption failed.");
       return NextResponse.json(
         { error: "Credential encryption is not configured." },
         { status: 500 }
@@ -214,8 +222,8 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error("[api/accounts] GCP insert failed:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[api/accounts] GCP account insert failed.");
+      return NextResponse.json({ error: "Failed to create cloud account." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data, account: data }, { status: 201 });

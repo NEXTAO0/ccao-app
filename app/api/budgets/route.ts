@@ -84,6 +84,7 @@ interface CreateBudgetBody {
   alert_emails?: string[];
   period?: "hourly" | "daily" | "monthly";
   compare_window?: "hourly" | "daily" | "monthly";
+  alert_email_consent?: boolean;
 }
 
 /** POST /api/budgets: create a budget for the signed-in user. */
@@ -103,7 +104,16 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
-  console.log("[POST /api/budgets] body:", body);
+
+  const alertEmails = Array.isArray(body.alert_emails)
+    ? body.alert_emails.map((email) => email.trim()).filter(Boolean)
+    : [];
+  if (alertEmails.length > 0 && body.alert_email_consent !== true) {
+    return NextResponse.json(
+      { error: "Confirm permission for alert recipients before saving their email addresses." },
+      { status: 400 }
+    );
+  }
 
   const threshold = Number(body.dollar_limit ?? body.amount ?? body.threshold_amount);
   if (!Number.isFinite(threshold) || threshold <= 0) {
@@ -149,7 +159,6 @@ export async function POST(request: Request) {
     : awsAccountValue?.id || null;
 
   if (isAws && !awsAccountId) {
-    console.error("[api/budgets] Missing AWS Account ID in body:", body);
     return NextResponse.json(
       { error: "aws_account_id is required. Received payload had no valid account ID." },
       { status: 400 }
@@ -205,7 +214,7 @@ export async function POST(request: Request) {
         .maybeSingle();
 
       if (linkedAccountError) {
-        console.error("[api/budgets] AWS linked-account lookup failed:", linkedAccountError);
+        console.error("[api/budgets] AWS linked-account lookup failed.");
         return NextResponse.json(
           { error: "Failed to validate AWS account." },
           { status: 500 }
@@ -227,7 +236,7 @@ export async function POST(request: Request) {
         .eq("id", awsAccountId)
         .maybeSingle();
       if (error) {
-        console.error("[api/budgets] AWS account lookup failed:", error);
+        console.error("[api/budgets] AWS account lookup failed.");
         return NextResponse.json(
           { error: "Failed to validate AWS account." },
           { status: 500 }
@@ -253,9 +262,8 @@ export async function POST(request: Request) {
     threshold_amount: threshold,
     currency: body.currency || "USD",
     auto_kill: Boolean(body.auto_kill),
-    alert_emails: Array.isArray(body.alert_emails)
-      ? body.alert_emails.map((e) => e.trim()).filter(Boolean)
-      : [],
+    alert_emails: alertEmails,
+    alert_email_consent_at: alertEmails.length > 0 ? new Date().toISOString() : null,
     period,
     active: true,
   };

@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics as AppAnalytics } from "@/components/Analytics";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 
 // [MANUAL_SETUP_REQUIRED]: Public app URL (lands in email links, sitemap.xml, robots.txt).
 const appUrl: string = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s · CCAO by NEXTAO",
   },
   description:
-    "Unified multi-cloud and AI budget controller for GCP, AWS, and OpenAI. Track spend in real time, enforce hard caps, and get anomaly alerts by email.",
+    "Budget monitoring for GCP, AWS, and OpenAI with scheduled spend checks, configurable provider actions, and optional email alerts.",
   keywords: [
     "multi-cloud cost control",
     "AI spend control",
@@ -35,14 +34,14 @@ export const metadata: Metadata = {
     siteName: "CCAO by NEXTAO",
     title: "CCAO: by NEXTAO",
     description:
-      "Never get surprised by a cloud or AI bill again. Real-time GCP, AWS, and OpenAI spend tracking, hard caps, and anomaly alerts.",
+      "Scheduled budget monitoring for GCP, AWS, and OpenAI. Provider reporting delays and service availability may affect results.",
     images: [{ url: `${appUrl}/icon.svg`, width: 64, height: 64, alt: "CCAO logo" }],
   },
   twitter: {
     card: "summary",
     title: "CCAO: by NEXTAO",
     description:
-      "Never get surprised by a cloud or AI bill again. Real-time GCP, AWS, and OpenAI spend tracking, hard caps, and anomaly alerts.",
+      "Scheduled budget monitoring for GCP, AWS, and OpenAI. Provider reporting delays and service availability may affect results.",
     images: [`${appUrl}/icon.svg`],
   },
   robots: {
@@ -56,19 +55,23 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#f4f1eb",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" className="light" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="min-h-dvh font-sans">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {children}
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <a className="skip-link" href="#main-content">
+            Skip to main content
+          </a>
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
           <AppAnalytics />
-          <VercelAnalytics />
         </ThemeProvider>
       </body>
     </html>

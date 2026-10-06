@@ -12,28 +12,28 @@ import {
 const features = [
   {
     icon: Gauge,
-    title: "Real-time spend tracking",
-    body: "Pulls the latest available usage from GCP Billing and BigQuery, AWS Cost Explorer, or the OpenAI Usage API on an hourly, daily, or monthly schedule.",
+    title: "Scheduled spend monitoring",
+    body: "Reads available usage from GCP Billing and BigQuery, AWS Cost Explorer, or the OpenAI Usage API. The hosted deployment is configured for daily checks; source data can be delayed.",
   },
   {
     icon: AlarmClock,
-    title: "Hard-cap Auto-Kill",
-    body: "Cross the threshold and CCAO invokes the provider-specific hard cap: detach GCP billing, freeze AWS access, or revoke an OpenAI API key.",
+    title: "Configured threshold actions",
+    body: "When a scheduled check detects a breach, CCAO attempts the configured provider action. Actions can disrupt service and depend on provider permissions and availability.",
   },
   {
     icon: Activity,
     title: "Anomaly spike detection",
-    body: "Rolling z-score statistics compare the current hour with your historical pattern. A 10× data-job spike triggers an email within the hour.",
+    body: "A z-score comparison checks a spend sample against recent stored samples. Results need enough history and are indicators, not a guarantee that every unusual charge will be detected.",
   },
   {
     icon: BellRing,
-    title: "Email alerts you read",
-    body: "Clean budget-breach and spike notifications with the spend, threshold, and action taken. Delivered free by Resend or your Gmail via SMTP.",
+    title: "Configurable email alerts",
+    body: "Budget-breach and anomaly notifications can be sent to configured recipients through Resend or SMTP. Delivery depends on provider availability and may incur provider charges.",
   },
   {
     icon: Database,
     title: "PostgreSQL, RLS-protected",
-    body: "Supabase Row Level Security protects every row. Your budgets and alerts remain private, and project links are encrypted at rest.",
+    body: "CCAO uses Supabase Postgres and user-scoped access. Review the supplied database policies and configure service-role credentials carefully for your deployment.",
   },
   {
     icon: KeyRound,
@@ -43,37 +43,37 @@ const features = [
   {
     icon: Lock,
     title: "Encrypted credentials",
-    body: "Cloud and AI credentials are encrypted with AES-256-GCM before storage and are never returned by the API.",
+    body: "Credentials submitted through the app are encrypted server-side with AES-256-GCM before storage. Account read endpoints omit credential fields.",
   },
   {
     icon: Mail,
-    title: "No-cost notifications",
-    body: "Resend's free tier gives you 3,000 emails a month. Combine it with Gmail SMTP as a fallback and pay zero for alerting.",
+    title: "Bring an email provider",
+    body: "Configure Resend or SMTP for notifications. Provider plans, message limits, and charges are controlled by those providers and may change.",
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="scroll-mt-20 border-y border-slate-800 bg-slate-900/60 py-20 sm:py-24">
+    <section id="features" className="scroll-mt-20 border-y border-border bg-background py-20 sm:py-24">
       <div className="container-page">
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-title">Features</p>
-          <h2 className="text-balance mt-3 text-3xl font-extrabold tracking-tight text-slate-50 sm:text-4xl">
+          <h2 className="text-balance mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             A small tool with a sharp edge
           </h2>
-          <p className="mt-4 text-lg text-slate-300">
-            Everything below runs on the free tiers of the services you already trust.
+          <p className="mt-4 text-lg text-muted-foreground">
+            Hosting, database, provider API, and email costs depend on your deployment and provider plans.
           </p>
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
-            <article key={feature.title} className="card p-5 transition hover:border-slate-700">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500 text-zinc-950">
+            <article key={feature.title} className="card p-5 transition hover:border-orange-500/40">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-500 text-black">
                 <feature.icon className="h-5 w-5" aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-base font-bold text-slate-100">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300">{feature.body}</p>
+              <h3 className="mt-4 text-base font-bold text-foreground">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.body}</p>
             </article>
           ))}
         </div>

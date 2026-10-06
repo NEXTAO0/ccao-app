@@ -1,56 +1,53 @@
 # CCAO — by NEXTAO
 
-> **Keep your cloud and AI spend under control — automatically.**
-> CCAO is a free, open-source, predictive budget controller for **Google Cloud Platform (GCP), Amazon Web Services (AWS), and OpenAI**:
-> real-time spend tracking, provider-specific hard caps, and anomaly/spike detection that emails you before the bill explodes.
+> **Monitor configured cloud and AI budgets from one dashboard.**
+> CCAO is open-source software for **Google Cloud Platform (GCP), Amazon Web Services (AWS), and OpenAI**. It stores spend samples, can send configured alerts, and can attempt provider actions on scheduled checks. Provider data delays and service availability apply.
 
-![License](https://img.shields.io/badge/license-MIT-blue) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Stack](https://img.shields.io/badge/50%25-cost%20control-green)
+![License](https://img.shields.io/badge/license-MIT-blue) ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
 ---
 
 ## Why CCAO
 
-Dev horror story: a stray `--region=all-regions` data-processing job, a leaked API key, a runaway
-replica pool — and a month's profit vanishes into a cloud invoice. Cloud providers bill **after** the
-damage. CCAO watches spend **as it accrues**, and when your budget threshold is crossed it can:
-**detach the project's billing** (the hard cap) and notify you instantly.
+Cloud billing APIs and exports can report usage after a delay. CCAO runs configured checks and
+records spend samples, alerts, and optional provider actions. The included hosted schedule is daily;
+it is not real-time monitoring and should not be your only cost-control mechanism.
 
 ## Features
 
-- **Real-time multi-cloud and AI spend tracking** — reads GCP Billing/BigQuery, AWS Cost Explorer, and OpenAI Usage API data and surfaces current cost vs. budget.
-- **Hard-cap Auto-Kill** — one toggle; when `current spend ≥ threshold`, CCAO invokes the provider-specific hard cap for GCP, AWS, or OpenAI.
-- **Anomaly / spike detection** — statistical comparison of recent hourly spend against historical patterns
-  (z-score) with an email alert when spend spikes.
-- **Free email notifications** — Resend (3k emails/mo free) or Nodemailer + Gmail SMTP.
-- **Works with Supabase** — Postgres + Row-Level Security + built-in auth; zero self-managed infra.
-- **Serverless, free-tier deployable** — runs on Vercel's hobby plan; cron-based checks mean no always-on server.
+- **Scheduled provider spend samples** — reads configured GCP Billing/BigQuery, AWS Cost Explorer, or OpenAI Usage API data.
+- **Optional provider actions** — attempts configured billing, IAM, or API-key actions after a scheduled threshold check; provider permissions and availability affect results.
+- **Anomaly indicators** — compares new samples against recent stored history; sufficient samples are required and results are not guaranteed detections.
+- **Configurable email alerts** — uses Resend or SMTP; provider availability and pricing apply.
+- **Supabase-backed accounts** — uses PostgreSQL, Supabase Auth, and the configured row-level security policies.
+- **Self-hostable deployment** — hosting, database, email, and provider charges depend on the operator's setup and plan.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend / Dashboard | Next.js 15 (App Router), TypeScript, Tailwind CSS, Lucide Icons |
+| Frontend / Dashboard | Next.js 16 (App Router), TypeScript, Tailwind CSS, Lucide Icons |
 | Backend API | Next.js API Routes (serverless, Node runtime) |
 | Database & Auth | Supabase (PostgreSQL + RLS + Auth) |
 | Cloud SDKs | Google Cloud Billing/BigQuery, AWS Cost Explorer/IAM, OpenAI Usage/Admin APIs |
 | Email | Resend API / Nodemailer (Gmail SMTP) |
-| Hosting | Vercel (or Render) |
+| Hosting | Vercel or a compatible self-hosted Node.js deployment |
 
 ## Repo Layout
 
 ```
 .
-├── app/
+├── app/\
 │   ├── api/                 # Backend endpoints (check-spend, budgets, accounts, alerts, auth)
 │   ├── dashboard/           # User dashboard (spend vs budget, auto-kill, alert log)
-│   ├── privacy/ terms/      # Legal pages
+│   ├── cookie-policy/ privacy/ terms/ # Legal and privacy pages
 │   ├── layout.tsx page.tsx not-found.tsx sitemap.ts robots.ts
 ├── components/              # Landing + dashboard UI
 ├── lib/                     # supabase, gcpBilling, email, anomaly, crypto, utils
 ├── supabase/schema.sql      # Full database schema + RLS policies
 ├── .env.example             # Env template (every secret annotated)
 ├── SETUP_GUIDE.md           # Step-by-step manual setup walkthrough
-└── vercel.json              # Free Vercel Cron schedule for /api/check-spend
+└── vercel.json              # Daily Vercel Cron schedule for /api/check-spend
 ```
 
 ## Quick Start
@@ -64,6 +61,7 @@ cp .env.example .env.local   # fill every [MANUAL_SETUP_REQUIRED] value
 #     → Follow SETUP_GUIDE.md for Supabase + provider credentials + Resend
 
 # 3. Apply the database schema (Supabase SQL editor → paste supabase/schema.sql → Run)
+#    Existing installs: apply all SQL files in supabase/migrations/
 
 # 4. Run
 npm run dev                  # http://localhost:3000
@@ -74,7 +72,7 @@ npm run dev                  # http://localhost:3000
 
 ## Deployment
 
-Vercel is the easiest free-tier target:
+Vercel is one supported hosting option; review current plan limits and pricing:
 
 ```bash
 vercel login
@@ -84,15 +82,14 @@ vercel env add SUPABASE_SERVICE_ROLE_KEY
 vercel --prod
 ```
 
-The included `vercel.json` registers a **cron job** that pings `/api/check-spend` hourly; Vercel signs
-those pings with `Authorization: Bearer $CRON_SECRET` automatically.
+The included `vercel.json` registers a daily **cron job** for `/api/check-spend`. Confirm actual
+execution frequency, plan eligibility, and authorization configuration in your deployment.
 
 ## A note on safety
 
-The "auto-kill" capability is **powerful**: it detaches billing from a live project. Use it deliberately.
-CCAO is opinionated software, not an adversarial protection system — anyone granted IAM roles via its
-service account can re-attach billing. Scope roles to the monitored project(s), keep `CRON_SECRET` and the
-service-account key in your host's encrypted store, and treat alerts as an early-warning not a lock.
+The optional provider actions can disrupt production and may fail or be delayed. Test them with
+non-production accounts, verify provider-side behavior, scope credentials to least privilege, protect
+`CRON_SECRET` and `CRYPTO_SECRET`, and do not treat alerts or thresholds as a guarantee against charges.
 
 ## License
 

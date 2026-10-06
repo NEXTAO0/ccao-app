@@ -14,7 +14,7 @@ const items = [
   {
     icon: Mail,
     label: "Resend",
-    sub: "Free email alerts",
+    sub: "Email provider integration",
   },
   {
     icon: Server,

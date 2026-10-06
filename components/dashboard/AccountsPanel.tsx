@@ -147,6 +147,7 @@ function AddProjectForm({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dataHandlingConsent, setDataHandlingConsent] = useState(false);
   const [form, setForm] = useState({
     provider: "gcp" as "gcp" | "aws" | "openai",
     name: "",
@@ -164,6 +165,11 @@ function AddProjectForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!dataHandlingConsent) {
+      setError("Confirm that you are authorized to connect this account and submit its credentials.");
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setDone(false);
@@ -175,8 +181,9 @@ function AddProjectForm({
           account_name: form.name,
           adminApiKey: form.admin_api_key,
           targetApiKey: form.api_key_id,
+          data_handling_consent: true,
         }
-      : form;
+      : { ...form, data_handling_consent: true };
 
     const res = await fetch("/api/accounts", {
       method: "POST",
@@ -268,6 +275,18 @@ function AddProjectForm({
           placeholder="-----BEGIN PRIVATE KEY-----&#10;MIIEvQ…&#10;-----END PRIVATE KEY-----"
         />
       </Field>}
+
+      <label className="flex items-start gap-3 text-sm text-zinc-400">
+        <input
+          type="checkbox"
+          checked={dataHandlingConsent}
+          onChange={(event) => setDataHandlingConsent(event.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+        />
+        <span>
+          I am authorized to connect this account and permit CCAO to use submitted credentials for configured spend checks and actions. See the <a href="/privacy" className="font-semibold text-orange-400 underline">Privacy Policy</a>.
+        </span>
+      </label>
 
       <div className="flex justify-end">
         <button type="submit" disabled={busy || done} className="btn-primary">

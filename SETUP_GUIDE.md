@@ -38,16 +38,18 @@ end-to-end: Supabase, GCP/AWS/OpenAI provider credentials, email delivery, deplo
 1. Go to [database.new](https://database.new) and create a free-tier project.
 2. Note the **Project URL** and both the **anon** and **service_role** keys
    (Supabase Dashboard → Project Settings → API). You'll use them in `.env.local`.
-3. Enable **Google OAuth** (or Email) under Dashboard → Authentication → Providers if you want dashboard sign-in.
+3. Enable **GitHub OAuth** and/or **Email magic links** under Dashboard → Authentication → Providers to match the sign-in options enabled in your deployment.
 
 ### 2.2 Apply the schema
 The full schema lives in [`supabase/schema.sql`](./supabase/schema.sql). Apply it in the **SQL Editor**:
 
 - Open Dashboard → SQL Editor → New query.
-- Paste the whole file → **Run**.
+- Paste the whole file → **Run**. Existing deployments should also apply any new SQL files under [`supabase/migrations`](./supabase/migrations).
 
-This creates `profiles`, `gcp_accounts`, `budgets`, `cost_logs` and `alert_logs`, all with
-**Row Level Security** enabled and helpful indexes.
+This creates the account, budget, cost, alert, and consent tables with **Row Level Security**
+enabled where applicable. `legal_consents` is server-only and has no user-facing RLS policies.
+Existing deployments must apply every SQL file in `supabase/migrations/`; the privacy
+minimization migration drops unused profile name and avatar fields.
 
 ### 2.3 Verify RLS
 Run these three queries in the SQL editor — all three *must* return nothing (users can't see other users' rows):

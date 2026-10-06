@@ -10,7 +10,7 @@ export function CTASection() {
           <div className="relative">
             <span className="chip border-orange-500/30 bg-orange-500/10 text-zinc-100">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" aria-hidden="true" />
-              Free forever · Open source · NEXTAO built
+              MIT licensed · Self-hostable · NEXTAO built
             </span>
             <h2 className="text-balance mx-auto mt-6 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
               Arm your budget before the invoice does.

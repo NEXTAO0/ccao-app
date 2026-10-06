@@ -7,19 +7,19 @@ import { cn } from "@/lib/utils";
 const faqs = [
   {
     q: "What happens when I hit my spending limit?",
-    a: "CCAO triggers the safety action you selected for that budget. For GCP, it detaches your billing account to halt paid resources. For OpenAI, it instantly revokes the API key. Everything is recorded in your audit log.",
+    a: "After a scheduled check detects a threshold breach, CCAO attempts the configured provider action: disable GCP project billing, freeze the configured AWS IAM user, or revoke the selected OpenAI API key. Results depend on provider permissions, API availability, and reporting delays; verify actions with the provider.",
   },
   {
     q: "How are my API keys and cloud credentials stored?",
-    a: "Your keys are encrypted at rest using AES-256 before saving to the database. They are decrypted in memory only when active background workers poll billing APIs.",
+    a: "Credentials submitted through the app are encrypted server-side with AES-256-GCM before storage. They are decrypted in server memory when needed for provider API calls. Protect your CRYPTO_SECRET and use least-privilege credentials.",
   },
   {
     q: "What happens if I delete my account?",
-    a: "Deletion wipes everything immediately. Your credentials, budget caps, alert logs, and spending history are permanently deleted from the database.",
+    a: "The Delete Account action requests deletion of your Supabase auth account and associated records configured to cascade. Provider backups, operational logs, and email-provider records may have separate retention periods.",
   },
   {
-    q: "How fast does CCAO catch overspending?",
-    a: "Background jobs poll billing endpoints on your configured schedule. You can also run manual spend checks from your dashboard whenever you deploy new infrastructure.",
+    q: "How often are spend checks run?",
+    a: "The hosted deployment is configured for one scheduled check per day. Self-hosted schedules can differ, and provider billing data may arrive late. CCAO is not a real-time spending guarantee.",
   },
   {
     q: "Which cloud and AI providers are supported?",
@@ -29,11 +29,11 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="scroll-mt-20 border-t border-zinc-800/80 bg-zinc-950 py-20 sm:py-24">
+    <section id="faq" className="scroll-mt-20 border-t border-border bg-background py-20 sm:py-24">
       <div className="container-page max-w-3xl">
         <div>
           <p className="mb-2 font-mono text-xs uppercase tracking-widest text-orange-500">FAQ</p>
-          <h2 className="mb-8 text-3xl font-bold text-zinc-100">Questions, answered</h2>
+          <h2 className="mb-8 text-3xl font-bold text-foreground">Questions, answered</h2>
         </div>
 
         <div>

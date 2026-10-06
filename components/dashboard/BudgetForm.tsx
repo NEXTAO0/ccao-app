@@ -13,6 +13,7 @@ export function BudgetForm({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alertEmailConsent, setAlertEmailConsent] = useState(false);
   const [form, setForm] = useState({
     name: "",
     provider: "gcp" as "gcp" | "aws" | "openai",
@@ -32,6 +33,15 @@ export function BudgetForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const alertRecipients = form.alert_emails
+      .split(",")
+      .map((email) => email.trim())
+      .filter(Boolean);
+    if (alertRecipients.length > 0 && !alertEmailConsent) {
+      setError("Confirm you have permission to email each alert recipient.");
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setDone(false);
@@ -55,13 +65,10 @@ export function BudgetForm({
       currency: form.currency,
       compare_window: form.period,
       auto_kill: form.auto_kill,
-      alert_emails: form.alert_emails
-        .split(",")
-        .map((email) => email.trim())
-        .filter(Boolean),
+      alert_emails: alertRecipients,
+      alert_email_consent: alertRecipients.length === 0 || alertEmailConsent,
     };
 
-    console.log("Submitting budget payload:", payload);
     const res = await fetch("/api/budgets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -82,6 +89,7 @@ export function BudgetForm({
       alert_emails: "",
       period: "hourly",
     }));
+    setAlertEmailConsent(false);
     setTimeout(onSaved, 400);
   }
 
@@ -201,6 +209,16 @@ export function BudgetForm({
           />
         </Field>
       </div>
+
+      <label className="flex items-start gap-3 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={alertEmailConsent}
+          onChange={(event) => setAlertEmailConsent(event.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+        />
+        <span>I have permission from each listed recipient to send them budget and anomaly alerts.</span>
+      </label>
 
       <label className="flex items-center gap-3 rounded-md border border-border bg-card p-4">
         <input

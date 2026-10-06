@@ -41,7 +41,7 @@ export default async function LoginPage(props: {
         </Link>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link href="/" className="text-sm font-semibold text-slate-400 hover:text-slate-100">
+          <Link href="/" className="text-sm font-semibold text-black hover:text-orange-700 dark:text-white dark:hover:text-orange-400">
             ← Back to home
           </Link>
         </div>
@@ -60,10 +60,10 @@ export default async function LoginPage(props: {
 
 function CardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="card p-8 shadow-xl shadow-blue-900/5">
+    <div className="card border-[color:rgba(124,45,18,0.5)] p-8 shadow-xl shadow-orange-500/10">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-50">Welcome to CCAO</h1>
-        <p className="mt-2 text-sm text-slate-400">
+        <h1 className="text-2xl font-extrabold tracking-tight text-black dark:text-white">Welcome to CCAO</h1>
+        <p className="mt-2 text-sm text-black/80 dark:text-white/80">
           Sign in or sign up to manage your budgets and cloud spend.
         </p>
       </div>

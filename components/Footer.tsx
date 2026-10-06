@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Github } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { CookieSettingsButton } from "@/components/CookieSettingsButton";
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-800 bg-zinc-950 text-zinc-400">
+    <footer className="border-t border-border bg-background text-muted-foreground">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4">
           <Link href="/" aria-label="CCAO home">
@@ -39,6 +40,7 @@ export function Footer() {
           links={[
             { label: "Privacy Policy", href: "/privacy" },
             { label: "Terms of Service", href: "/terms" },
+            { label: "Cookie Policy", href: "/cookie-policy" },
           ]}
         />
       </div>
@@ -65,6 +67,7 @@ export function Footer() {
             <Link href="/terms" className="text-zinc-400 transition hover:text-orange-400">
               Terms
             </Link>
+            <CookieSettingsButton />
           </div>
         </div>
       </div>

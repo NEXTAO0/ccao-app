@@ -11,13 +11,13 @@ const steps = [
     icon: ShieldCheck,
     step: "02",
     title: "Set your budget & hard cap",
-    body: "Define a threshold in your currency and flip the Auto-Kill toggle on. CCAO now knows exactly when to pull the plug.",
+    body: "Define a threshold and optionally enable a provider action. Actions are attempted during scheduled checks and may disrupt workloads.",
   },
   {
     icon: BellRing,
     step: "03",
     title: "Review spend alerts",
-    body: "Every hour, the scheduled check compares current spend with your history and emails you when it detects a spike or threshold breach.",
+    body: "The hosted deployment is configured for one daily check. Email alerts depend on your provider configuration, and upstream billing data can be delayed.",
   },
   {
     icon: Rocket,
@@ -34,11 +34,10 @@ export function HowItWorks() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="section-title">How it works</p>
           <h2 className="text-balance mt-3 text-3xl font-extrabold tracking-tight text-slate-50 sm:text-4xl">
-            From cloud and AI bill shock to auto-pilot in 10 minutes
+            Review cloud and AI spend from one dashboard
           </h2>
           <p className="mt-4 text-lg text-slate-300">
-            No complex pipelines or provider-specific dashboards to maintain. Four steps,
-            all reachable from one small dashboard.
+            Connect an account, configure a budget, and review samples and alerts. Provider dashboards remain the source of truth for billing.
           </p>
         </div>
 

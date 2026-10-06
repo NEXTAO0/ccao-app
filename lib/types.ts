@@ -18,8 +18,6 @@ export type AlertSeverity = "info" | "warning" | "critical";
 export interface Profile {
   id: string;
   email: string;
-  full_name?: string | null;
-  avatar_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -55,6 +53,7 @@ export interface Budget {
   currency: Currency;
   auto_kill: boolean;
   alert_emails: string[];
+  alert_email_consent_at?: string | null;
   period: BudgetPeriod;
   active: boolean;
   created_at: string;

@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Check, Server, Terminal, Zap } from "lucide-react";
 
 const freeIncludes = [
-  "Unlimited budgets & projects",
+  "Budgets and connected accounts, subject to provider limits",
   "Auto-Kill hard cap toggle",
   "Anomaly spike detection",
   "Email alerts (Resend / SMTP)",
-  "Real-time spend dashboard",
+  "Spend sample dashboard",
   "Community support on GitHub",
 ];
 
@@ -20,8 +20,7 @@ export function Pricing() {
             Cloud cost control with no subscription
           </h2>
           <p className="mt-4 text-lg text-slate-300">
-            CCAO is open source and runs on the free tiers of the platforms it uses.
-            There is no paid plan, and the project will remain open source.
+            CCAO is open source. This app does not include subscription billing; hosting, email, database, and provider API charges may apply.
           </p>
         </div>
 
@@ -35,12 +34,10 @@ export function Pricing() {
               <h3 className="text-lg font-extrabold text-slate-100">CCAO Cloud</h3>
             </div>
             <p className="mt-2 text-sm text-slate-300">
-              Hosted on Vercel free tier with hourly cron checks, Supabase free database,
-              and Resend free email.
+              Hosting and integrations are provided by the deployment operator. Provider plans and usage can incur charges.
             </p>
             <p className="mt-6">
-              <span className="font-mono text-4xl font-extrabold tracking-tight text-slate-100">$0</span>
-              <span className="text-sm font-medium text-slate-500"> / month · forever</span>
+              <span className="font-mono text-2xl font-extrabold tracking-tight text-slate-100">No app subscription</span>
             </p>
             <ul className="mt-6 space-y-3">
               {freeIncludes.map((item) => (
@@ -89,8 +86,7 @@ export function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-xs text-slate-500">
-          Provider free tiers may change. Check Resend, Supabase, Google Cloud, AWS, and OpenAI for
-          current limits before going all-in.
+            Check current provider pricing, quotas, and billing behavior before connecting production accounts.
         </p>
       </div>
     </section>

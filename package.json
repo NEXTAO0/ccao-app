@@ -2,7 +2,7 @@
   "name": "ccao",
   "version": "0.1.0",
   "private": true,
-  "description": "CCAO (Cloud Controller by NEXTAO) - free-tier predictive cloud cost control platform for Google Cloud Platform.",
+  "description": "CCAO (Cloud Controller by NEXTAO) - open-source scheduled cloud and AI budget monitoring for GCP, AWS, and OpenAI.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

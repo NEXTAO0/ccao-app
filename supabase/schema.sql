@@ -13,8 +13,6 @@ create extension if not exists "pgcrypto";
 create table if not exists public.profiles (
   id         uuid primary key references auth.users (id) on delete cascade,
   email      text not null,
-  full_name  text,
-  avatar_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -28,6 +26,17 @@ create policy "profiles_update_own" on public.profiles
 create policy "profiles_insert_own" on public.profiles
   for insert with check (auth.uid() = id);
 
+-- Minimal server-only record of accepted policy versions; no IP/device data.
+create table if not exists public.legal_consents (
+  user_id        uuid not null references auth.users (id) on delete cascade,
+  terms_version  text not null,
+  privacy_version text not null,
+  accepted_at    timestamptz not null default now(),
+  primary key (user_id, terms_version, privacy_version)
+);
+
+alter table public.legal_consents enable row level security;
+
 -- Keeps `profiles` in sync with new auth users.
 create function public.handle_new_user()
 returns trigger
@@ -35,14 +44,8 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name, avatar_url)
-  values (
-    new.id,
-    coalesce(new.email, ''),
-    coalesce(new.raw_user_meta_data ->> 'full_name',
-             new.raw_user_meta_data ->> 'name', ''),
-    coalesce(new.raw_user_meta_data ->> 'avatar_url', new.raw_user_meta_data ->> 'picture', '')
-  )
+  insert into public.profiles (id, email)
+  values (new.id, coalesce(new.email, ''))
   on conflict (id) do nothing;
   return new;
 end;
@@ -114,6 +117,7 @@ create table if not exists public.budgets (
   auto_kill      boolean not null default false,
   -- Emails notified on breach / spike.
   alert_emails   text[] not null default '{}',
+  alert_email_consent_at timestamptz,
   -- Sampling window for spend comparison: 'hourly' | 'daily' | 'monthly'
   period         text not null default 'hourly',
   active         boolean not null default true,
@@ -129,6 +133,9 @@ alter table public.budgets
 
 alter table public.budgets
   add column if not exists aws_account_id uuid;
+
+alter table public.budgets
+  add column if not exists alert_email_consent_at timestamptz;
 
 alter table public.budgets
   drop constraint if exists budgets_provider_check;

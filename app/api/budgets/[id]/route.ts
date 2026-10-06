@@ -59,9 +59,17 @@ export async function PATCH(request: Request, { params }: Params) {
         { status: 400 }
       );
     }
-    allowed.alert_emails = (body.alert_emails as string[])
+    const alertEmails = (body.alert_emails as string[])
       .map((e) => e.trim())
       .filter(Boolean);
+    if (alertEmails.length > 0 && body.alert_email_consent !== true) {
+      return NextResponse.json(
+        { error: "Confirm permission for alert recipients before saving their email addresses." },
+        { status: 400 }
+      );
+    }
+    allowed.alert_emails = alertEmails;
+    allowed.alert_email_consent_at = alertEmails.length > 0 ? new Date().toISOString() : null;
   }
 
   if (Object.keys(allowed).length === 0) {

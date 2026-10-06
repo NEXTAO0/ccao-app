@@ -24,11 +24,11 @@ export default async function HomePage({
   const params = await searchParams;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-zinc-950 text-zinc-400">
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <DeletionToast visible={params.deleted === "1"} />
       <Navbar />
-      <main className="flex-1">
-        <section className="border-b border-zinc-800" aria-labelledby="hero-title">
+      <main className="flex-1 bg-background">
+        <section className="border-b border-border bg-background" aria-labelledby="hero-title">
           <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-28">
             <div className="flex flex-col justify-center">
               <div className="mb-7 inline-flex w-fit items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1.5 font-mono text-xs text-zinc-300">
@@ -45,7 +45,7 @@ export default async function HomePage({
                 Cloud &amp; API Budget Circuit Breaker
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
-                Automated hard-cap policy enforcement and API key revocation for GCP, AWS, and OpenAI. Prevent runaway billing spikes before they hit your card.
+                Scheduled spend checks and configurable provider actions for GCP, AWS, and OpenAI. Provider reporting delays and API availability can affect detection and enforcement.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -95,15 +95,15 @@ export default async function HomePage({
               Automated IAM policy attachment and OpenAI key revocation upon threshold breach.
             </ArchitectureColumn>
             <ArchitectureColumn number="03" label="ZERO TRUST">
-              Client-side AES-256-GCM credential encryption. Keys never exposed in plaintext.
+              Server-side AES-256-GCM encryption before credentials are stored.
             </ArchitectureColumn>
           </div>
         </section>
 
-        <section id="how-it-works" className="scroll-mt-20 border-t border-zinc-800 bg-zinc-900/30" aria-labelledby="how-it-works-title">
+        <section id="how-it-works" className="scroll-mt-20 border-t border-border bg-background" aria-labelledby="how-it-works-title">
           <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-orange-400">Execution path</p>
-            <h2 id="how-it-works-title" className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">
+            <h2 id="how-it-works-title" className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               From spend signal to enforced limit.
             </h2>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -116,11 +116,11 @@ export default async function HomePage({
 
         <FAQ />
 
-        <section className="border-t border-zinc-800 bg-zinc-900/30" aria-label="Open source call to action">
+        <section className="border-t border-border bg-background" aria-label="Open source call to action">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center sm:px-6 lg:px-8">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-orange-400">Ready state</p>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">Put a hard limit between your workloads and your card.</h2>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">Add a configured spend threshold to your workloads.</h2>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/login" className="inline-flex items-center gap-2 rounded-md border border-orange-500 bg-orange-500 px-4 py-2.5 font-mono text-sm font-semibold text-zinc-950 shadow-sm shadow-orange-500/20 transition-all hover:bg-orange-600">
@@ -142,16 +142,16 @@ export default async function HomePage({
 
 function TelemetryCard() {
   const providers = [
-    { name: "GCP", target: "project-prod-402", spend: "$14.20 / $100.00", status: "OK", statusClass: "text-emerald-400" },
-    { name: "AWS", target: "us-east-1-app", spend: "$48.90 / $50.00", status: "NEAR LIMIT", statusClass: "text-zinc-300" },
-    { name: "OAI", target: "org-llm-pipeline", spend: "$25.00 / $25.00", status: "BREACH (KEY REVOKED)", statusClass: "text-rose-400" },
+    { name: "GCP", target: "sample-project", spend: "$14.20 / $100.00", status: "EXAMPLE", statusClass: "text-emerald-400" },
+    { name: "AWS", target: "example-account", spend: "$48.90 / $50.00", status: "EXAMPLE", statusClass: "text-zinc-300" },
+    { name: "OAI", target: "example-org", spend: "$25.00 / $25.00", status: "EXAMPLE", statusClass: "text-rose-400" },
   ];
 
   return (
-    <div className="glass rounded-lg p-4 font-mono text-xs shadow-[0_0_0_1px_rgba(255,255,255,0.02)]" aria-label="Simulated provider telemetry">
+    <div className="glass rounded-lg p-4 font-mono text-xs shadow-[0_0_0_1px_rgba(255,255,255,0.02)]" aria-label="Illustrative sample values, not live provider data">
         <div className="mb-4 flex items-center justify-between border-b border-zinc-800 pb-3 text-zinc-500">
-        <span>ccao://telemetry/mtd</span>
-        <span className="text-orange-400">streaming</span>
+      <span>Illustrative sample · not connected</span>
+      <span className="text-orange-400">example</span>
       </div>
       <div className="space-y-4">
         {providers.map((provider) => (
@@ -162,7 +162,7 @@ function TelemetryCard() {
           </div>
         ))}
       </div>
-      <div className="mt-5 border-t border-zinc-800 pt-3 text-zinc-600">last sample: 14:32:08 UTC · refresh interval: 60s<span className="ml-1 inline-block h-4 w-2 animate-pulse bg-orange-500 align-middle" aria-hidden="true" /></div>
+      <div className="mt-5 border-t border-zinc-800 pt-3 text-zinc-600">Sample values only. Check frequency and data freshness depend on deployment and provider.</div>
     </div>
   );
 }

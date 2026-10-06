@@ -8,6 +8,10 @@ import { createSupabaseServerClientForRequest } from "@/lib/supabaseServer";
  */
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+
+  // Policy consent must be recorded before the user can authenticate.
+  if (pathname === "/api/legal-consent") return response;
 
   const supabase = createSupabaseServerClientForRequest(request, response);
 
@@ -15,8 +19,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
 
   // /api/check-spend is guarded by CRON_SECRET (Vercel Cron), not a user session.
   const isCronEndpoint = pathname === "/api/check-spend";

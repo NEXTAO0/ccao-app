@@ -26,7 +26,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     .maybeSingle();
 
   if (cloudLookupError) {
-    console.error("[api/accounts] Cloud account lookup failed:", cloudLookupError);
+    console.error("[api/accounts] Cloud account lookup failed.");
     return NextResponse.json({ error: "Failed to load linked account." }, { status: 500 });
   }
 
@@ -38,7 +38,7 @@ export async function DELETE(_request: Request, { params }: Params) {
         .eq("user_id", user.id)
         .eq("aws_account_id", id);
       if (budgetsError) {
-        console.error("[api/accounts] AWS budget cleanup failed:", budgetsError);
+        console.error("[api/accounts] AWS budget cleanup failed.");
         return NextResponse.json({ error: "Failed to remove budgets linked to this account." }, { status: 500 });
       }
     }
@@ -49,7 +49,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       .eq("id", id)
       .eq("user_id", user.id);
     if (error) {
-      console.error("[api/accounts] Cloud account unlink failed:", error);
+      console.error("[api/accounts] Cloud account unlink failed.");
       return NextResponse.json({ error: "Failed to unlink account." }, { status: 500 });
     }
     return NextResponse.json({ ok: true });
@@ -63,7 +63,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     .maybeSingle();
 
   if (awsLookupError) {
-    console.error("[api/accounts] AWS account lookup failed:", awsLookupError);
+    console.error("[api/accounts] AWS account lookup failed.");
     return NextResponse.json({ error: "Failed to load linked account." }, { status: 500 });
   }
 
@@ -74,7 +74,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       .eq("user_id", user.id)
       .eq("aws_account_id", id);
     if (budgetsError) {
-      console.error("[api/accounts] AWS budget cleanup failed:", budgetsError);
+      console.error("[api/accounts] AWS budget cleanup failed.");
       return NextResponse.json({ error: "Failed to remove budgets linked to this account." }, { status: 500 });
     }
 
@@ -84,7 +84,7 @@ export async function DELETE(_request: Request, { params }: Params) {
       .eq("id", id)
       .eq("user_id", user.id);
     if (error) {
-      console.error("[api/accounts] AWS account unlink failed:", error);
+      console.error("[api/accounts] AWS account unlink failed.");
       return NextResponse.json({ error: "Failed to unlink account." }, { status: 500 });
     }
     return NextResponse.json({ ok: true });
@@ -98,7 +98,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     .maybeSingle();
 
   if (openaiLookupError) {
-    console.error("[api/accounts] OpenAI account lookup failed:", openaiLookupError);
+    console.error("[api/accounts] OpenAI account lookup failed.");
     return NextResponse.json({ error: "Failed to load linked account." }, { status: 500 });
   }
 
@@ -112,7 +112,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     .eq("user_id", user.id)
     .eq("openai_account_id", id);
   if (budgetsError) {
-    console.error("[api/accounts] OpenAI budget cleanup failed:", budgetsError);
+    console.error("[api/accounts] OpenAI budget cleanup failed.");
     return NextResponse.json({ error: "Failed to remove budgets linked to this account." }, { status: 500 });
   }
 
@@ -122,7 +122,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     .eq("id", id)
     .eq("user_id", user.id);
   if (error) {
-    console.error("[api/accounts] OpenAI account unlink failed:", error);
+    console.error("[api/accounts] OpenAI account unlink failed.");
     return NextResponse.json({ error: "Failed to unlink account." }, { status: 500 });
   }
 
