@@ -66,8 +66,8 @@ async function requestBodyExceedsLimit(request: NextRequest) {
 
 function isBillingExemptApi(pathname: string): boolean {
   return (
-    pathname.startsWith("/api/stripe/checkout") ||
-    pathname.startsWith("/api/stripe/portal") ||
+    pathname.startsWith("/api/paddle/checkout") ||
+    pathname.startsWith("/api/paddle/portal") ||
     pathname === "/api/user/delete"
   );
 }
@@ -83,7 +83,7 @@ function isCoreFeatureApi(pathname: string): boolean {
 /**
  * Next.js 16 "Proxy" (formerly Middleware). Refreshes Supabase auth sessions on
  * every request so cached routes stay up to date. Protected routes redirect to
- * /login when there is no session, and to /subscribe when the 30-day trial has
+ * /login when there is no session, and to /pricing when the 30-day trial has
  * expired without an active subscription.
  *
  * This is an optimistic check only (see authentication guide): dashboard pages
@@ -107,8 +107,8 @@ export async function proxy(request: NextRequest) {
 
     const publicApi = pathname === "/api/legal-consent" || pathname === "/api/captcha/verify";
     const cronEndpoint = pathname === "/api/check-spend";
-    const stripeWebhook = pathname === "/api/stripe/webhook" || pathname.startsWith("/api/stripe/webhook/");
-    if (publicApi || cronEndpoint || stripeWebhook || isAuthRequest) {
+    const paddleWebhook = pathname === "/api/paddle/webhook" || pathname.startsWith("/api/paddle/webhook/");
+    if (publicApi || cronEndpoint || paddleWebhook || isAuthRequest) {
       const authorization = request.headers.get("authorization") ?? "";
       const isValidCron = cronEndpoint && Boolean(process.env.CRON_SECRET) &&
         authorization === `Bearer ${process.env.CRON_SECRET}`;
@@ -125,7 +125,7 @@ export async function proxy(request: NextRequest) {
       if (await requestBodyExceedsLimit(request)) {
         return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
       }
-      if (publicApi || stripeWebhook || isAuthRequest) return response;
+      if (publicApi || paddleWebhook || isAuthRequest) return response;
     }
   }
 
@@ -155,15 +155,15 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Stripe webhook is public (verified via Stripe signature in the route).
-  const isStripeWebhook =
-    pathname === "/api/stripe/webhook" || pathname.startsWith("/api/stripe/webhook/");
+  // Paddle webhook is public (verified via paddle-signature in the route).
+  const isPaddleWebhook =
+    pathname === "/api/paddle/webhook" || pathname.startsWith("/api/paddle/webhook/");
 
   // Protect the dashboard and its API surface (except cron + webhook).
   const isProtected =
     (pathname.startsWith("/dashboard") || pathname.startsWith("/api/")) &&
     !isCronEndpoint &&
-    !isStripeWebhook;
+    !isPaddleWebhook;
 
   if (isProtected && !user) {
     if (pathname.startsWith("/api/")) {
@@ -203,15 +203,15 @@ export async function proxy(request: NextRequest) {
           return NextResponse.json(
             {
               error: "Subscription required. Your 30-day trial has expired.",
-              subscribeUrl: "/subscribe",
+              subscribeUrl: "/pricing",
             },
             { status: 402 }
           );
         }
-        const subscribeUrl = request.nextUrl.clone();
-        subscribeUrl.pathname = "/subscribe";
-        subscribeUrl.search = "";
-        return NextResponse.redirect(subscribeUrl);
+        const pricingUrl = request.nextUrl.clone();
+        pricingUrl.pathname = "/pricing";
+        pricingUrl.search = "";
+        return NextResponse.redirect(pricingUrl);
       }
     }
   }

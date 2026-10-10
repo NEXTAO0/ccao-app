@@ -137,9 +137,9 @@ export default async function TermsPage() {
           <Section title="10. Trials and subscriptions">
             <p>
               New accounts receive a 30-day free trial with full access. After the trial
-              expires, a paid subscription via Stripe is required to continue using the
+              expires, a paid subscription via Paddle is required to continue using the
               dashboard and APIs. Unauthenticated or expired-trial requests are redirected
-              to the subscription checkout flow. See the pricing section for current plans.
+              to the pricing page. See the pricing page and refund policy for current plans.
             </p>
           </Section>
         </div>

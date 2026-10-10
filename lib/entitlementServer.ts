@@ -30,6 +30,6 @@ export function entitlementRequiredResponse(status: string) {
   return {
     error: "Subscription required. Your 30-day trial has expired.",
     status,
-    subscribeUrl: "/subscribe",
+    subscribeUrl: "/pricing",
   };
 }

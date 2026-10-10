@@ -49,7 +49,7 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .maybeSingle();
   if (!getEntitlement(entitlementProfile as Profile | null).entitled) {
-    redirect("/subscribe");
+    redirect("/pricing");
   }
   const [
     { data: budgets },

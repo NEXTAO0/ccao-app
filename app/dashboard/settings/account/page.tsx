@@ -30,7 +30,7 @@ export default async function AccountSettingsPage() {
       .eq("id", user.id)
       .maybeSingle();
     if (!getEntitlement(profile as Profile | null).entitled) {
-      redirect("/subscribe");
+      redirect("/pricing");
     }
   } catch {
     // Fail open here; Proxy + dashboard enforce the wall. Avoid locking settings.

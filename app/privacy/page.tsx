@@ -119,8 +119,8 @@ export default async function PrivacyPage() {
               only after optional analytics consent.
               Providers process data under their own terms and retention practices. The
               SaaS deployment is operated by NEXTAO, including subscription billing via
-              Stripe (customer identifiers and subscription status are stored to enforce
-              entitlements).
+              Paddle as merchant of record (customer identifiers and subscription
+              status are stored to enforce entitlements).
             </p>
           </Section>
 

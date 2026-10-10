@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { getAppUrl, getStripeClient } from "@/lib/stripe";
+import { getPaddle } from "@/lib/paddle";
 
 export const runtime = "nodejs";
 
 /**
- * POST /api/stripe/portal — Customer Portal session for self-service
+ * POST /api/paddle/portal — Customer Portal session for self-service
  * upgrades, downgrades, cancellation, and payment-method updates.
+ * Returns { url } for redirecting to Paddle's hosted portal.
  */
 export async function POST() {
   const supabase = await createServerSupabaseClient();
@@ -19,35 +20,39 @@ export async function POST() {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  let stripeCustomerId: string | null = null;
+  let paddleCustomerId: string | null = null;
+  let paddleSubscriptionId: string | null = null;
   try {
     const admin = getSupabaseAdmin();
     const { data: profile } = await admin
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("paddle_customer_id, paddle_subscription_id")
       .eq("id", user.id)
       .maybeSingle();
-    stripeCustomerId = (profile?.stripe_customer_id as string | null) ?? null;
+    paddleCustomerId = (profile?.paddle_customer_id as string | null) ?? null;
+    paddleSubscriptionId = (profile?.paddle_subscription_id as string | null) ?? null;
   } catch {
     return NextResponse.json({ error: "Billing lookup failed." }, { status: 503 });
   }
 
-  if (!stripeCustomerId) {
+  if (!paddleCustomerId) {
     return NextResponse.json(
-      { error: "No Stripe customer yet. Start checkout first." },
+      { error: "No Paddle customer yet. Start checkout first." },
       { status: 404 }
     );
   }
 
   try {
-    const stripe = getStripeClient();
-    const session = await stripe.billingPortal.sessions.create({
-      customer: stripeCustomerId,
-      return_url: `${getAppUrl()}/subscribe`,
-    });
-    return NextResponse.json({ url: session.url });
+    const paddle = getPaddle();
+    const session = await paddle.customerPortalSessions.create(
+      paddleCustomerId,
+      paddleSubscriptionId ? [paddleSubscriptionId] : []
+    );
+    const url = session.urls?.general?.overview;
+    if (!url) throw new Error("Portal session returned no URL.");
+    return NextResponse.json({ url });
   } catch {
-    console.error("[stripe/portal] failed to create portal session.");
+    console.error("[paddle/portal] failed to create portal session.");
     return NextResponse.json(
       { error: "Unable to open billing portal. Please try again." },
       { status: 502 }

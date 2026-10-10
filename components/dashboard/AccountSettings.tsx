@@ -37,12 +37,15 @@ export function AccountSettings({ user }: { user: User }) {
       <section className="card p-6" aria-labelledby="billing-title">
         <h2 id="billing-title" className="text-lg font-bold text-zinc-100">Subscription &amp; billing</h2>
         <p className="mt-2 text-sm leading-6 text-zinc-400">
-          30-day free trial included. After expiry a paid Stripe subscription is required.
-          Manage plans, payment methods, and cancellation via Secure checkout.
+          30-day free trial included. After expiry a paid Paddle subscription is required.
+          Manage plans, payment methods, and cancellation via secure checkout.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <a href="/subscribe" className="btn-primary">
+          <a href="/pricing" className="btn-primary">
             Manage subscription
+          </a>
+          <a href="/refund" className="btn-secondary">
+            Refund policy
           </a>
         </div>
       </section>

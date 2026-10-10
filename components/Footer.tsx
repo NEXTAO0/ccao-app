@@ -28,8 +28,8 @@ export function Footer() {
         <FooterCol
           title="Resources"
           links={[
-            { label: "Pricing", href: "/#pricing" },
-            { label: "Subscribe", href: "/subscribe" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "Refund Policy", href: "/refund" },
             { label: "Documentation", href: "/#how-it-works" },
           ]}
         />
@@ -39,6 +39,7 @@ export function Footer() {
           links={[
             { label: "Privacy Policy", href: "/privacy" },
             { label: "Terms of Service", href: "/terms" },
+            { label: "Refund Policy", href: "/refund" },
             { label: "Cookie Policy", href: "/cookie-policy" },
           ]}
         />
@@ -50,8 +51,11 @@ export function Footer() {
             CCAO: by NEXTAO. Closed-source SaaS. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <Link href="/subscribe" className="text-zinc-400 transition hover:text-orange-400">
-              Subscribe
+            <Link href="/pricing" className="text-zinc-400 transition hover:text-orange-400">
+              Pricing
+            </Link>
+            <Link href="/refund" className="text-zinc-400 transition hover:text-orange-400">
+              Refunds
             </Link>
             <Link href="/privacy" className="text-zinc-400 transition hover:text-orange-400">
               Privacy

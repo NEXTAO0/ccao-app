@@ -3,7 +3,7 @@
 > **Monitor configured cloud and AI budgets from one dashboard.**
 > CCAO is a closed-source SaaS product by NEXTAO for **Google Cloud Platform (GCP), Amazon Web Services (AWS), and OpenAI**. It stores spend samples, can send configured alerts, and can attempt provider actions on scheduled checks. Provider data delays and service availability apply.
 >
-> **30-day free trial included. Paid subscription via Stripe required after trial.**
+> **30-day free trial included. Paid subscription via Paddle required after trial.**
 
 ![License](https://img.shields.io/badge/license-Proprietary-red) ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
@@ -22,7 +22,7 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 - **Anomaly indicators** — compares new samples against recent stored history; sufficient samples are required and results are not guaranteed detections.
 - **Configurable email alerts** — uses Resend or SMTP; provider availability and pricing apply.
 - **Supabase-backed accounts** — uses PostgreSQL, Supabase Auth, and the configured row-level security policies.
-- **Subscription billing** — Stripe Checkout + Billing with 30-day trial enforcement via Supabase entitlement flags.
+- **Subscription billing** — Paddle Billing (merchant of record) with 30-day trial enforcement via Supabase entitlement flags.
 - **SaaS deployment** — hosting, database, email, and provider charges depend on the SaaS plan.
 
 ## Tech Stack
@@ -35,7 +35,7 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 | Cloud SDKs | Google Cloud Billing/BigQuery, AWS Cost Explorer/IAM, OpenAI Usage/Admin APIs |
 | Email | Resend API / Nodemailer (Gmail SMTP) |
 | Hosting | Vercel SaaS deployment |
-| Billing | Stripe Checkout (subscription mode) + Customer Portal |
+| Billing | Paddle Billing (`@paddle/paddle-js` checkout + Customer Portal + webhooks) |
 
 ## Repo Layout
 
@@ -97,8 +97,9 @@ non-production accounts, verify provider-side behavior, scope credentials to lea
 ## Pricing
 
 New accounts include a **30-day free trial** with full access. After expiry, a
-paid Stripe subscription (monthly or annual) is required. Expired or
-unauthenticated requests to protected routes redirect to `/subscribe`.
+paid Paddle subscription (monthly or annual) is required. Expired or
+unauthenticated requests to protected routes redirect to `/pricing`.
+See `/refund` for the refund policy.
 
 ## License
 

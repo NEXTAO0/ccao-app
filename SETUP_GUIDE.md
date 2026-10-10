@@ -29,7 +29,7 @@ end-to-end: Supabase, GCP/AWS/OpenAI provider credentials, email delivery, deplo
 - A [Supabase](https://supabase.com) project
 - Either a [Resend](https://resend.com) account (`resend` provider) **or** any Gmail account (SMTP fallback)
 - (Optional) A [Vercel](https://vercel.com) account for deployment + cron
-- A Stripe account with Checkout + Billing prices (monthly + annual) and a webhook endpoint
+- A Paddle account with Billing prices (monthly + annual, `pri_` IDs) and a webhook notification destination
 
 ---
 
@@ -149,6 +149,11 @@ Fill in every `[MANUAL_SETUP_REQUIRED]` value. Then:
 | `CRYPTO_SECRET` | `openssl rand -base64 32` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Dashboard → Turnstile → site key |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Dashboard → Turnstile → secret key (server only) |
+| `PADDLE_API_KEY` | Paddle → Developer tools → Authentication → API key (server only) |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Paddle → Developer tools → Authentication → client-side token (`test_` sandbox / `live_` production) |
+| `NEXT_PUBLIC_PADDLE_ENV` | `sandbox` for testing, `production` for live |
+| `PADDLE_NOTIFICATION_WEBHOOK_SECRET` | Paddle → Developer tools → Notifications → destination secret (server only) |
+| `PADDLE_PRICE_MONTHLY` / `PADDLE_PRICE_ANNUAL` | Paddle → Catalog → Products → recurring prices (`pri_` IDs; sandbox and live differ) |
 
 ### 5.1 CAPTCHA and request security
 
@@ -171,6 +176,21 @@ limits enabled independently.
 Email magic-link requests are sent directly to Supabase Auth. Configure Supabase Auth rate
 limits and CAPTCHA protection there as well. The app proxy throttles API routes and auth
 callbacks, but does not replace upstream provider limits or a hosting WAF.
+
+### 5.2 Paddle Billing
+
+1. Create monthly + annual recurring prices in Paddle → Catalog → Products.
+2. Add every deploy URL to Paddle → Checkout → Website approval, and set the
+   default payment link to your app URL.
+3. Create a notification destination at Paddle → Developer tools → Notifications
+   pointing at `https://your-app.com/api/paddle/webhook`, subscribed to
+   `subscription.*`, `transaction.completed`, `transaction.paid`,
+   `customer.created`, and `customer.updated`. Copy its secret to
+   `PADDLE_NOTIFICATION_WEBHOOK_SECRET`.
+4. Apply `supabase/migrations/20261011_paddle_billing.sql` so profiles carry
+   `paddle_customer_id` / `paddle_subscription_id`. The webhook (service_role)
+   syncs subscription activation, updates, and cancellation into Supabase;
+   expired trials redirect to `/pricing`.
 
 ---
 

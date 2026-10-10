@@ -27,11 +27,11 @@ const faqs = [
   },
   {
     q: "How does the 30-day free trial work?",
-    a: "Every new account gets 30 days of full access from signup. After the trial expires, a paid subscription via Stripe is required to keep using the dashboard and APIs. Expired accounts are redirected to subscription checkout.",
+    a: "Every new account gets 30 days of full access from signup. After the trial expires, a paid subscription via Paddle is required to keep using the dashboard and APIs. Expired accounts are redirected to the pricing page.",
   },
   {
     q: "How do subscriptions and billing work?",
-    a: "Subscriptions are billed via Stripe Checkout with monthly or annual plans. Manage upgrades, downgrades, cancellation, and payment methods in the Stripe customer portal from the Subscribe page.",
+    a: "Subscriptions are billed via Paddle Billing (merchant of record) with monthly or annual plans. Manage upgrades, downgrades, cancellation, and payment methods in the Paddle customer portal from the pricing page. See the refund policy for refund terms.",
   },
 ];
 

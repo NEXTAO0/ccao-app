@@ -127,7 +127,7 @@ export default async function HomePage({
               Initialize account
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/subscribe" className="inline-flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all hover:border-orange-500/40 hover:bg-zinc-800">
+              <Link href="/pricing" className="inline-flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all hover:border-orange-500/40 hover:bg-zinc-800">
                 View plans
               </Link>
             </div>

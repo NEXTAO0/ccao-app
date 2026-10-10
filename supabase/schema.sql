@@ -15,9 +15,9 @@ create table if not exists public.profiles (
   email      text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  -- SaaS billing entitlements (managed server-side via Stripe webhooks).
-  stripe_customer_id text,
-  stripe_subscription_id text,
+  -- SaaS billing entitlements (managed server-side via Paddle webhooks).
+  paddle_customer_id text,
+  paddle_subscription_id text,
   subscription_status text not null default 'trialing',
   subscription_price_id text,
   subscription_current_period_end timestamptz,
@@ -25,8 +25,8 @@ create table if not exists public.profiles (
   trial_end timestamptz not null default (now() + interval '30 days')
 );
 
-create index if not exists profiles_stripe_customer_id_idx
-  on public.profiles (stripe_customer_id);
+create index if not exists profiles_paddle_customer_id_idx
+  on public.profiles (paddle_customer_id);
 create index if not exists profiles_subscription_status_idx
   on public.profiles (subscription_status);
 create index if not exists profiles_trial_end_idx

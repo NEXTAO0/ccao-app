@@ -34,7 +34,7 @@ export function getEntitlement(profile: Profile | null): Entitlement {
     } else {
       entitled = trialValid;
     }
-    // DB trial fallback keeps Stripe-trialing users entitled pre-webhook.
+    // DB trial fallback keeps trialing users entitled pre-webhook.
     if (!entitled && trialValid) entitled = true;
   }
 

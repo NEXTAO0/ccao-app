@@ -50,7 +50,7 @@ export function Pricing() {
                 </li>
               ))}
             </ul>
-            <Link href="/subscribe?plan=monthly" className="btn-primary mt-8 w-full">
+            <Link href="/pricing?plan=monthly" className="btn-primary mt-8 w-full">
               Start 30-day trial
             </Link>
           </div>
@@ -76,7 +76,7 @@ export function Pricing() {
               ))}
             </ul>
             <Link
-              href="/subscribe?plan=annual"
+              href="/pricing?plan=annual"
               className="btn-secondary mt-8 w-full"
               aria-label="Start annual trial checkout"
             >

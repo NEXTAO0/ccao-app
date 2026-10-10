@@ -15,6 +15,8 @@
     "@aws-sdk/client-iam": "^3.1131.0",
     "@google-cloud/bigquery": "^9.0.3",
     "@google-cloud/billing": "^6.1.0",
+    "@paddle/paddle-js": "^1.6.5",
+    "@paddle/paddle-node-sdk": "^3.10.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
     "@vercel/analytics": "^2.0.1",
@@ -24,8 +26,7 @@
     "nodemailer": "^10.0.15",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "resend": "^6.26.0",
-    "stripe": "^23.0.0"
+    "resend": "^6.26.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
