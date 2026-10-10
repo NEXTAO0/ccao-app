@@ -4,6 +4,9 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Budget, CostLog, SpendSnapshot } from "@/lib/types";
 
 export const runtime = "nodejs";
+const MAX_BUDGETS_PER_USER = 20;
+const MAX_AUTO_KILL_BUDGETS_PER_USER = 5;
+const MAX_ALERT_RECIPIENTS_PER_BUDGET = 5;
 
 interface BudgetWithSpend extends Budget {
   latest_spend?: SpendSnapshot | null;
@@ -105,9 +108,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
+  if (body.alert_emails !== undefined &&
+    (!Array.isArray(body.alert_emails) || body.alert_emails.some((email) => typeof email !== "string"))) {
+    return NextResponse.json({ error: "alert_emails must contain email strings." }, { status: 400 });
+  }
   const alertEmails = Array.isArray(body.alert_emails)
     ? body.alert_emails.map((email) => email.trim()).filter(Boolean)
     : [];
+  if (alertEmails.length > MAX_ALERT_RECIPIENTS_PER_BUDGET) {
+    return NextResponse.json(
+      { error: `A budget can have at most ${MAX_ALERT_RECIPIENTS_PER_BUDGET} alert recipients.` },
+      { status: 400 }
+    );
+  }
   if (alertEmails.length > 0 && body.alert_email_consent !== true) {
     return NextResponse.json(
       { error: "Confirm permission for alert recipients before saving their email addresses." },
@@ -139,6 +152,38 @@ export async function POST(request: Request) {
       { error: "provider must be gcp, aws, or openai." },
       { status: 400 }
     );
+  }
+
+  const { count: budgetCount, error: budgetCountError } = await supabase
+    .from("budgets")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+  if (budgetCountError) {
+    return NextResponse.json({ error: "Unable to verify budget quota." }, { status: 503 });
+  }
+  if ((budgetCount ?? 0) >= MAX_BUDGETS_PER_USER) {
+    return NextResponse.json(
+      { error: `Budget limit reached (${MAX_BUDGETS_PER_USER} budgets per user).` },
+      { status: 429 }
+    );
+  }
+
+  if (body.auto_kill) {
+    const { count: autoKillCount, error: autoKillCountError } = await supabase
+      .from("budgets")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .eq("auto_kill", true);
+    if (autoKillCountError) {
+      return NextResponse.json({ error: "Unable to verify automatic-action quota." }, { status: 503 });
+    }
+    if ((autoKillCount ?? 0) >= MAX_AUTO_KILL_BUDGETS_PER_USER) {
+      return NextResponse.json(
+        { error: `Automatic actions are limited to ${MAX_AUTO_KILL_BUDGETS_PER_USER} active budgets per user.` },
+        { status: 429 }
+      );
+    }
   }
 
   const gcpAccountId = provider === "gcp" ? body.gcp_account_id || null : null;
@@ -275,6 +320,9 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    if (error.code === "23514") {
+      return NextResponse.json({ error: "A configured budget or alert quota was exceeded." }, { status: 429 });
+    }
     return NextResponse.json(
       { error: "Failed to create budget." },
       { status: 500 }

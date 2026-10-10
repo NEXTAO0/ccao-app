@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Github, KeyRound, Loader2, Mail } from "lucide-react";
 import { LEGAL_POLICY_VERSION } from "@/lib/legal";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { TurnstileChallenge } from "@/components/TurnstileChallenge";
 
 const disposableEmailDomains = new Set([
   "10minutemail.com",
@@ -47,7 +48,9 @@ export function LoginPanel({
   const [githubBusy, setGithubBusy] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const [error, setError] = useState<string | null>(initialError ?? null);
+  const resetCaptchaRef = useRef<(() => void) | null>(null);
 
   const appUrl =
     typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
@@ -55,22 +58,49 @@ export function LoginPanel({
   callbackUrl.searchParams.set("next", next);
   callbackUrl.searchParams.set("legalVersion", LEGAL_POLICY_VERSION);
 
-  async function registerLegalConsent() {
+  async function verifyCaptcha(): Promise<boolean> {
+    if (!captchaToken) {
+      setError("Complete the CAPTCHA challenge to continue.");
+      return false;
+    }
+    try {
+      const response = await fetch("/api/captcha/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string; ok?: boolean } | null;
+      if (!response.ok || body?.ok !== true) {
+        setError(body?.error ?? "CAPTCHA verification failed. Please try again.");
+        resetCaptchaRef.current?.();
+        setCaptchaToken("");
+        return false;
+      }
+      setCaptchaToken("");
+      resetCaptchaRef.current?.();
+      return true;
+    } catch {
+      setError("CAPTCHA verification is unavailable. Please try again.");
+      return false;
+    }
+  }
+
+  async function registerLegalConsent(): Promise<string | null> {
     try {
       const response = await fetch("/api/legal-consent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accepted: true, version: LEGAL_POLICY_VERSION }),
       });
+      const body = (await response.json().catch(() => null)) as { error?: string; proof?: string } | null;
       if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as { error?: string } | null;
         setError(body?.error ?? "Could not verify policy acceptance. Please try again.");
-        return false;
+        return null;
       }
-      return true;
+      return body?.proof ?? null;
     } catch {
       setError("Could not verify policy acceptance. Check your connection and try again.");
-      return false;
+      return null;
     }
   }
 
@@ -79,19 +109,32 @@ export function LoginPanel({
       setError("Agree to the Terms of Service and acknowledge the Privacy Policy to continue.");
       return;
     }
+    if (!captchaToken) {
+      setError("Complete the CAPTCHA challenge to continue.");
+      return;
+    }
     // [MANUAL_SETUP_REQUIRED]: Enable GitHub provider in Supabase → Authentication →
     // Providers, and set the callback URL to /auth/callback (see lib/supabaseServer).
     const supabase = getSupabaseBrowserClient();
     setGithubBusy(true);
     setError(null);
-    if (!(await registerLegalConsent())) {
+    const captchaVerified = await verifyCaptcha();
+    if (!captchaVerified) {
       setGithubBusy(false);
       return;
     }
+    const legalProof = await registerLegalConsent();
+    if (!legalProof) {
+      setGithubBusy(false);
+      return;
+    }
+    const oauthCallbackUrl = new URL(callbackUrl);
+    oauthCallbackUrl.searchParams.set("authMethod", "oauth");
+    oauthCallbackUrl.searchParams.set("legalProof", legalProof);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: callbackUrl.toString(),
+        redirectTo: oauthCallbackUrl.toString(),
       },
     });
     setGithubBusy(false);
@@ -112,23 +155,35 @@ export function LoginPanel({
       setError("Agree to the Terms of Service and acknowledge the Privacy Policy to continue.");
       return;
     }
+    if (!captchaToken) {
+      setError("Complete the CAPTCHA challenge to continue.");
+      return;
+    }
     // [MANUAL_SETUP_REQUIRED]: Enable the Email magic-link provider in Supabase →
     // Authentication → Providers (Email), and customise the redirect URL if needed.
+    const captchaTokenForAuth = captchaToken;
     const supabase = getSupabaseBrowserClient();
     setSendingMagic(true);
     setError(null);
-    if (!(await registerLegalConsent())) {
+    const legalProof = await registerLegalConsent();
+    if (!legalProof) {
       setSendingMagic(false);
       return;
     }
+    const emailCallbackUrl = new URL(callbackUrl);
+    emailCallbackUrl.searchParams.set("authMethod", "email");
+    emailCallbackUrl.searchParams.set("legalProof", legalProof);
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: callbackUrl.toString(),
+        emailRedirectTo: emailCallbackUrl.toString(),
+        captchaToken: captchaTokenForAuth,
       },
     });
     setSendingMagic(false);
     if (error) {
+      resetCaptchaRef.current?.();
+      setCaptchaToken("");
       const authError = error as { code?: string; message?: string; status?: number };
       const isRateLimited =
         authError.status === 429 ||
@@ -187,10 +242,15 @@ export function LoginPanel({
         </span>
       </label>
 
+      <TurnstileChallenge
+        onToken={setCaptchaToken}
+        onResetReady={(reset) => { resetCaptchaRef.current = reset; }}
+      />
+
       <button
         type="button"
         onClick={signInWithGitHub}
-        disabled={githubBusy}
+        disabled={githubBusy || !captchaToken}
         className="btn-secondary w-full"
       >
         {githubBusy ? (
@@ -227,7 +287,7 @@ export function LoginPanel({
             className="w-full rounded-xl border border-[#7c2d12] bg-white py-2.5 pl-10 pr-4 text-sm text-black placeholder:text-black/60 focus:border-[#7c2d12] focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:bg-[#111111] dark:text-white dark:placeholder:text-white/60"
           />
         </div>
-        <button type="submit" disabled={sendingMagic} className="btn-primary w-full">
+        <button type="submit" disabled={sendingMagic || !captchaToken} className="btn-primary w-full">
           {sendingMagic ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

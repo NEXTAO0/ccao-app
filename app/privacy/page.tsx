@@ -80,6 +80,13 @@ export default async function PrivacyPage() {
                 browser local-storage values for your theme and analytics choice. See the{" "}
                 <Link href="/cookie-policy" className="font-semibold text-orange-600 underline">Cookie Policy</Link>.
               </li>
+              <li>
+                <strong>Abuse prevention:</strong> API rate-limit counters keyed by HMAC hashes
+                of the caller&apos;s network address and, for signed-in requests, account ID.
+                Counters are expired and cleaned opportunistically; raw addresses are not stored
+                in the counter table. Hosting providers may maintain separate request logs under
+                their own retention policies.
+              </li>
             </ul>
           </Section>
 
@@ -107,8 +114,9 @@ export default async function PrivacyPage() {
               CCAO does not sell personal data or use it for advertising. Data is processed by
               the deployment&apos;s hosting and database providers (Vercel and Supabase in the
               hosted configuration), connected provider APIs (Google Cloud, AWS, and OpenAI), and
-              configured email provider (Resend or your SMTP provider). Vercel Analytics and
-              Google Analytics, when configured, load only after optional analytics consent.
+              configured email provider (Resend or your SMTP provider), and Cloudflare for
+              CAPTCHA verification. Vercel Analytics and Google Analytics, when configured, load
+              only after optional analytics consent.
               Providers process data under their own terms and retention practices. For a
               self-hosted deployment, its operator chooses these providers and is responsible for
               their configuration.

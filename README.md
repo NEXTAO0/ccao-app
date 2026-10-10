@@ -45,7 +45,7 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 ├── components/              # Landing + dashboard UI
 ├── lib/                     # supabase, gcpBilling, email, anomaly, crypto, utils
 ├── supabase/schema.sql      # Full database schema + RLS policies
-├── .env.example             # Env template (every secret annotated)
+├── .env.example.copy        # Env template (every secret annotated)
 ├── SETUP_GUIDE.md           # Step-by-step manual setup walkthrough
 └── vercel.json              # Daily Vercel Cron schedule for /api/check-spend
 ```
@@ -57,11 +57,10 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 npm install
 
 # 2. Configure
-cp .env.example .env.local   # fill every [MANUAL_SETUP_REQUIRED] value
+cp .env.example.copy .env.local   # fill every [MANUAL_SETUP_REQUIRED] value
 #     → Follow SETUP_GUIDE.md for Supabase + provider credentials + Resend
 
-# 3. Apply the database schema (Supabase SQL editor → paste supabase/schema.sql → Run)
-#    Existing installs: apply all SQL files in supabase/migrations/
+# 3. Apply the database schema and all SQL migrations under supabase/migrations/
 
 # 4. Run
 npm run dev                  # http://localhost:3000
@@ -78,7 +77,7 @@ Vercel is one supported hosting option; review current plan limits and pricing:
 vercel login
 vercel env add GCP_PRIVATE_KEY        # paste full PEM; preserve newlines
 vercel env add SUPABASE_SERVICE_ROLE_KEY
-# ... add every remaining var from .env.example ...
+# ... add every remaining variable from .env.example.copy ...
 vercel --prod
 ```
 

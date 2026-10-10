@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
+const MAX_AUTO_KILL_BUDGETS_PER_USER = 5;
+const MAX_ALERT_RECIPIENTS_PER_BUDGET = 5;
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -53,15 +55,21 @@ export async function PATCH(request: Request, { params }: Params) {
     allowed.period = body.period;
   }
   if (body.alert_emails !== undefined) {
-    if (!Array.isArray(body.alert_emails)) {
+    if (!Array.isArray(body.alert_emails) || body.alert_emails.some((email) => typeof email !== "string")) {
       return NextResponse.json(
-        { error: "alert_emails must be an array of strings." },
+        { error: "alert_emails must contain email strings." },
         { status: 400 }
       );
     }
     const alertEmails = (body.alert_emails as string[])
       .map((e) => e.trim())
       .filter(Boolean);
+    if (alertEmails.length > MAX_ALERT_RECIPIENTS_PER_BUDGET) {
+      return NextResponse.json(
+        { error: `A budget can have at most ${MAX_ALERT_RECIPIENTS_PER_BUDGET} alert recipients.` },
+        { status: 400 }
+      );
+    }
     if (alertEmails.length > 0 && body.alert_email_consent !== true) {
       return NextResponse.json(
         { error: "Confirm permission for alert recipients before saving their email addresses." },
@@ -70,6 +78,42 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     allowed.alert_emails = alertEmails;
     allowed.alert_email_consent_at = alertEmails.length > 0 ? new Date().toISOString() : null;
+  }
+
+  if (allowed.auto_kill === true || allowed.active === true) {
+    const { data: currentBudget, error: currentBudgetError } = await supabase
+      .from("budgets")
+      .select("auto_kill, active")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (currentBudgetError) {
+      return NextResponse.json({ error: "Unable to verify automatic-action quota." }, { status: 503 });
+    }
+    if (!currentBudget) {
+      return NextResponse.json({ error: "Budget not found or not owned by the current user." }, { status: 404 });
+    }
+
+    const willBeAutoKill = (allowed.auto_kill as boolean | undefined) ?? currentBudget.auto_kill;
+    const willBeActive = (allowed.active as boolean | undefined) ?? currentBudget.active;
+    if (willBeAutoKill && willBeActive) {
+      const { count, error } = await supabase
+        .from("budgets")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("active", true)
+        .eq("auto_kill", true)
+        .neq("id", id);
+      if (error) {
+        return NextResponse.json({ error: "Unable to verify automatic-action quota." }, { status: 503 });
+      }
+      if ((count ?? 0) >= MAX_AUTO_KILL_BUDGETS_PER_USER) {
+        return NextResponse.json(
+          { error: `Automatic actions are limited to ${MAX_AUTO_KILL_BUDGETS_PER_USER} active budgets per user.` },
+          { status: 429 }
+        );
+      }
+    }
   }
 
   if (Object.keys(allowed).length === 0) {
@@ -85,6 +129,9 @@ export async function PATCH(request: Request, { params }: Params) {
     .maybeSingle();
 
   if (error) {
+    if (error.code === "23514") {
+      return NextResponse.json({ error: "A configured budget or alert quota was exceeded." }, { status: 429 });
+    }
     return NextResponse.json(
       { error: "Failed to update budget." },
       { status: 500 }

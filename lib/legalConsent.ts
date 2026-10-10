@@ -1,8 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { LEGAL_POLICY_VERSION } from "@/lib/legal";
 
-export const LEGAL_CONSENT_COOKIE = "ccao-legal-consent";
-export const LEGAL_CONSENT_MAX_AGE_SECONDS = 10 * 60;
+export const LEGAL_CONSENT_MAX_AGE_SECONDS = 60 * 60;
 
 function getConsentSecret() {
   const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;

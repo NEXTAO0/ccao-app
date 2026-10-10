@@ -97,7 +97,7 @@ export async function sendEmail(input: EmailInput): Promise<EmailResult> {
       return {
         provider,
         error:
-          "RESEND_API_KEY is missing. Either set it or switch EMAIL_PROVIDER=smtp (see .env.example).",
+          "RESEND_API_KEY is missing. Either set it or switch EMAIL_PROVIDER=smtp (see .env.example.copy).",
       };
     }
     const { data } = await resend.emails.send({

@@ -97,8 +97,8 @@ export default async function TermsPage() {
 
           <Section title="6. Third-party services">
             <p>
-              CCAO may connect to Google Cloud, AWS, OpenAI, Supabase, Vercel, Google Analytics
-              when configured and allowed, and Resend or your SMTP provider. Their services,
+              CCAO may connect to Google Cloud, AWS, OpenAI, Supabase, Vercel, Cloudflare,
+              Google Analytics when configured and allowed, and Resend or your SMTP provider. Their services,
               availability, pricing, data handling, and terms are controlled by those providers.
               You are responsible for reviewing applicable terms and charges.
             </p>

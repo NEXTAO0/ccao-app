@@ -131,7 +131,7 @@ CCAO reads real spend from the **standard BigQuery billing export**:
 ## 5. Environment Variables
 
 ```bash
-cp .env.example .env.local
+cp .env.example.copy .env.local
 ```
 Fill in every `[MANUAL_SETUP_REQUIRED]` value. Then:
 
@@ -146,6 +146,30 @@ Fill in every `[MANUAL_SETUP_REQUIRED]` value. Then:
 | `RESEND_API_KEY` | Resend Dashboard → API Keys |
 | `CRON_SECRET` | `openssl rand -hex 32` |
 | `CRYPTO_SECRET` | `openssl rand -base64 32` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Dashboard → Turnstile → site key |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Dashboard → Turnstile → secret key (server only) |
+
+### 5.1 CAPTCHA and request security
+
+Create a Cloudflare Turnstile widget for each deployed hostname. Add its site key and secret
+to the environment variables above. In Supabase Dashboard → Authentication → CAPTCHA
+Protection, select Cloudflare Turnstile and configure the same secret so Supabase validates
+email magic-link tokens. GitHub OAuth challenge tokens are verified by the app with Cloudflare
+Siteverify before redirecting.
+
+Apply all SQL migrations under `supabase/migrations/` before deploying. API throttling uses
+atomic Postgres counters and fails closed if that table/function is unavailable. Configure
+your hosting proxy to overwrite `X-Forwarded-For`; the proxy uses that value for coarse
+per-address throttling and only stores an HMAC hash of it in the rate-limit table.
+
+The app limits each user to 10 linked accounts, 20 budgets, 5 active automatic-action budgets,
+and 5 alert recipients per budget. A spend-check run stops above 250 active budgets. These are
+application guardrails, not provider billing caps; keep provider budget alerts and spending
+limits enabled independently.
+
+Email magic-link requests are sent directly to Supabase Auth. Configure Supabase Auth rate
+limits and CAPTCHA protection there as well. The app proxy throttles API routes and auth
+callbacks, but does not replace upstream provider limits or a hosting WAF.
 
 ---
 
@@ -168,7 +192,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 ## 7. Deployment (Vercel)
 
 1. Push this repo to GitHub and import it on [vercel.com](https://vercel.com/new).
-2. Dashboard → **Project → Settings → Environment Variables** → add every var from `.env.example` (mark non-`NEXT_PUBLIC_` ones as encrypted).
+2. Dashboard → **Project → Settings → Environment Variables** → add every var from `.env.example.copy` (mark non-`NEXT_PUBLIC_` ones as encrypted).
 3. For `GCP_PRIVATE_KEY` prefer **`vercel env add GCP_PRIVATE_KEY`** (or the UI textarea) so the newlines are preserved — it accepts the full PEM block on a single line.
 4. Deploy. The site now serves the landing page, dashboard, `/privacy`, `/terms`, `sitemap.xml`, `robots.txt`.
 

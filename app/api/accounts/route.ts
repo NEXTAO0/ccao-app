@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import type { CloudProvider, GcpAccount } from "@/lib/types";
 
 export const runtime = "nodejs";
+const MAX_LINKED_ACCOUNTS_PER_USER = 10;
 
 /** GET /api/accounts: the signed-in user's linked cloud and API accounts. */
 export async function GET() {
@@ -118,6 +119,23 @@ export async function POST(request: Request) {
     );
   }
 
+  const admin = getSupabaseAdmin();
+  const accountCounts = await Promise.all([
+    admin.from("gcp_accounts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    admin.from("aws_accounts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    admin.from("openai_accounts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+  ]);
+  if (accountCounts.some((result) => result.error)) {
+    return NextResponse.json({ error: "Unable to verify account quota." }, { status: 503 });
+  }
+  const linkedAccountCount = accountCounts.reduce((total, result) => total + (result.count ?? 0), 0);
+  if (linkedAccountCount >= MAX_LINKED_ACCOUNTS_PER_USER) {
+    return NextResponse.json(
+      { error: `Account limit reached (${MAX_LINKED_ACCOUNTS_PER_USER} linked accounts per user).` },
+      { status: 429 }
+    );
+  }
+
   const provider = body.provider ?? "gcp";
   if (!["gcp", "aws", "openai"].includes(provider)) {
     return NextResponse.json({ error: "provider must be gcp, aws, or openai." }, { status: 400 });
@@ -218,7 +236,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabaseAdmin
       .from("gcp_accounts")
       .insert(cleanGcpPayload)
-      .select("*")
+      .select("id, provider, name, project_id, api_key_id, billing_account_id, created_at, updated_at")
       .single();
 
     if (error) {

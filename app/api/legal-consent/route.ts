@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createLegalConsentToken,
-  LEGAL_CONSENT_COOKIE,
-  LEGAL_CONSENT_MAX_AGE_SECONDS,
-} from "@/lib/legalConsent";
+import { createLegalConsentToken } from "@/lib/legalConsent";
 import { LEGAL_POLICY_VERSION } from "@/lib/legal";
 
 export const runtime = "nodejs";
@@ -49,13 +45,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Consent verification is not configured." }, { status: 503 });
   }
 
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set(LEGAL_CONSENT_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/auth/callback",
-    maxAge: LEGAL_CONSENT_MAX_AGE_SECONDS,
-  });
-  return response;
+  return NextResponse.json({ ok: true, proof: token });
 }

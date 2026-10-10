@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClientForRequest } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { LEGAL_POLICY_VERSION } from "@/lib/legal";
-import { LEGAL_CONSENT_COOKIE, verifyLegalConsentToken } from "@/lib/legalConsent";
+import { verifyLegalConsentToken } from "@/lib/legalConsent";
+import { CAPTCHA_PROOF_COOKIE, verifyCaptchaProof } from "@/lib/captcha";
 
 // [MANUAL_SETUP_REQUIRED]: In Supabase Dashboard → Authentication → URL Configuration,
 // add your site URL (e.g. https://ccao.vercel.app) and the redirect URLs:
@@ -18,13 +19,24 @@ export async function GET(request: NextRequest) {
     ? requestedNext
     : "/dashboard";
   const legalVersion = searchParams.get("legalVersion");
-  const consentToken = request.cookies.get(LEGAL_CONSENT_COOKIE)?.value;
+  const consentToken = searchParams.get("legalProof") ?? undefined;
+  const authMethod = searchParams.get("authMethod");
+  const captchaCookie = request.cookies.get(CAPTCHA_PROOF_COOKIE)?.value;
 
-  if (code && legalVersion === LEGAL_POLICY_VERSION && verifyLegalConsentToken(consentToken)) {
+  const consentAccepted = legalVersion === LEGAL_POLICY_VERSION && verifyLegalConsentToken(consentToken);
+  if (code && consentAccepted) {
     const response = NextResponse.redirect(`${origin}${next}`);
     const supabase = createSupabaseServerClientForRequest(request, response);
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && data.user) {
+      const provider = data.user.app_metadata.provider;
+      const captchaAccepted = provider === "github"
+        ? authMethod === "oauth" && verifyCaptchaProof(captchaCookie)
+        : provider === "email" && authMethod === "email";
+      if (!captchaAccepted) {
+        return NextResponse.redirect(`${origin}/login?error=Unable to verify sign-in protection`);
+      }
+
       const { error: consentError } = await getSupabaseAdmin()
         .from("legal_consents")
         .upsert(
@@ -37,7 +49,7 @@ export async function GET(request: NextRequest) {
         );
 
       if (!consentError) {
-        response.cookies.set(LEGAL_CONSENT_COOKIE, "", {
+        response.cookies.set(CAPTCHA_PROOF_COOKIE, "", {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",

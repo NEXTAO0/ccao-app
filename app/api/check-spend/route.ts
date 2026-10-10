@@ -20,6 +20,7 @@ import type {
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+const MAX_ACTIVE_BUDGETS_PER_CHECK = 250;
 
 // [MANUAL_SETUP_REQUIRED]: CRON_SECRET guards this endpoint. Vercel Cron sends it as
 // `Authorization: Bearer $CRON_SECRET`. Generate: openssl rand -hex 32.
@@ -82,13 +83,22 @@ export async function POST(request: Request) {
     .from("budgets")
     .select("*, gcp_accounts(*)")
     .eq("active", true)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .limit(MAX_ACTIVE_BUDGETS_PER_CHECK + 1);
 
   if (budgetError) {
     console.error("[check-spend] failed to load budgets");
     return NextResponse.json(
       { error: "Failed to load budgets." },
       { status: 500 }
+    );
+  }
+
+  if ((budgets?.length ?? 0) > MAX_ACTIVE_BUDGETS_PER_CHECK) {
+    console.error("[check-spend] active budget safety cap exceeded");
+    return NextResponse.json(
+      { error: `Active budget safety cap exceeded (${MAX_ACTIVE_BUDGETS_PER_CHECK}).` },
+      { status: 503 }
     );
   }
 

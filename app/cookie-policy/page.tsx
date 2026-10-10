@@ -31,7 +31,7 @@ export default function CookiePolicyPage() {
           <section>
             <h2 className="text-lg font-bold">Essential authentication cookies</h2>
             <p className="mt-2">
-              Supabase authentication uses first-party session cookies so signed-in users can access their accounts. These are necessary for authentication and security and cannot be disabled while using signed-in features.
+              Supabase authentication uses first-party session cookies so signed-in users can access their accounts. OAuth also uses a short-lived, HttpOnly CAPTCHA proof cookie for its callback. These are necessary for authentication and abuse prevention and cannot be disabled while using sign-in features.
             </p>
           </section>
 
@@ -46,6 +46,13 @@ export default function CookiePolicyPage() {
             <h2 className="text-lg font-bold">Optional analytics</h2>
             <p className="mt-2">
               Vercel Analytics is disabled until you allow optional analytics. Google Analytics 4 may also load after you allow it, but only when the site operator has configured it. Analytics providers may process usage and technical information under their own policies. Rejecting optional analytics does not affect sign-in or core app features.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold">CAPTCHA verification</h2>
+            <p className="mt-2">
+              Sign-in uses Cloudflare Turnstile to limit automated abuse. Challenge tokens are verified by Cloudflare, and a short-lived proof is used to complete OAuth callbacks. Email magic-link tokens are validated by the configured Supabase Auth CAPTCHA integration. Cloudflare and Supabase may process technical request information under their own policies.
             </p>
           </section>
 
