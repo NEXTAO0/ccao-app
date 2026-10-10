@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { checkUserEntitlement, entitlementRequiredResponse } from "@/lib/entitlementServer";
 
 export const runtime = "nodejs";
 const MAX_AUTO_KILL_BUDGETS_PER_USER = 5;
@@ -19,6 +20,13 @@ async function requireUser() {
 export async function PATCH(request: Request, { params }: Params) {
   const { supabase, user } = await requireUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const entitlement = await checkUserEntitlement(user.id);
+  if (!entitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(entitlement.status), {
+      status: 402,
+    });
+  }
 
   const { id } = await params;
 
@@ -151,6 +159,13 @@ export async function PATCH(request: Request, { params }: Params) {
 export async function DELETE(_request: Request, { params }: Params) {
   const { supabase, user } = await requireUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const delEntitlement = await checkUserEntitlement(user.id);
+  if (!delEntitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(delEntitlement.status), {
+      status: 402,
+    });
+  }
 
   const { id } = await params;
 

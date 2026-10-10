@@ -15,11 +15,37 @@ export type AlertType =
 
 export type AlertSeverity = "info" | "warning" | "critical";
 
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "incomplete"
+  | "incomplete_expired"
+  | "unpaid"
+  | "paused"
+  | "expired";
+
 export interface Profile {
   id: string;
   email: string;
   created_at: string;
   updated_at: string;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  subscription_status: SubscriptionStatus;
+  subscription_price_id?: string | null;
+  subscription_current_period_end?: string | null;
+  trial_start: string;
+  trial_end: string;
+}
+
+export interface Entitlement {
+  entitled: boolean;
+  status: SubscriptionStatus;
+  trialEnd: string | null;
+  trialExpired: boolean;
+  periodEnd: string | null;
 }
 
 export interface GcpAccount {

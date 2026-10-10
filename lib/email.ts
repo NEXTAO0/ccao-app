@@ -182,7 +182,7 @@ export function buildAlertEmailHtml(opts: {
                 </tr>
               </table>
               <a href="${dashboardUrl}" style="display:inline-block;background:${accent};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 24px;border-radius:10px;">Open dashboard</a>
-              <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#94a3b8;">Sent by CCAO. Free, open-source cloud cost control. <a href="${dashboardUrl}" style="color:#94a3b8;">Manage alerts</a>.</p>
+              <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#94a3b8;">Sent by CCAO by NEXTAO. Subscription SaaS for cloud cost control. <a href="${dashboardUrl}" style="color:#94a3b8;">Manage alerts</a>.</p>
             </td>
           </tr>
         </table>

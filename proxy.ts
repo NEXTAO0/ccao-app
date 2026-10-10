@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClientForRequest } from "@/lib/supabaseServer";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getEntitlement } from "@/lib/subscription";
+import type { Profile } from "@/lib/types";
 import { consumeRateLimit, getClientAddress } from "@/lib/rateLimit";
 
 function rateLimitedResponse(retryAfterSeconds: number, limit: number) {
@@ -61,10 +64,30 @@ async function requestBodyExceedsLimit(request: NextRequest) {
   }
 }
 
+function isBillingExemptApi(pathname: string): boolean {
+  return (
+    pathname.startsWith("/api/stripe/checkout") ||
+    pathname.startsWith("/api/stripe/portal") ||
+    pathname === "/api/user/delete"
+  );
+}
+
+function isCoreFeatureApi(pathname: string): boolean {
+  return (
+    pathname.startsWith("/api/budgets") ||
+    pathname.startsWith("/api/accounts") ||
+    pathname.startsWith("/api/alerts")
+  );
+}
+
 /**
  * Next.js 16 "Proxy" (formerly Middleware). Refreshes Supabase auth sessions on
  * every request so cached routes stay up to date. Protected routes redirect to
- * /login when there is no session.
+ * /login when there is no session, and to /subscribe when the 30-day trial has
+ * expired without an active subscription.
+ *
+ * This is an optimistic check only (see authentication guide): dashboard pages
+ * and API routes re-verify entitlements server-side before permitting access.
  */
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
@@ -84,7 +107,8 @@ export async function proxy(request: NextRequest) {
 
     const publicApi = pathname === "/api/legal-consent" || pathname === "/api/captcha/verify";
     const cronEndpoint = pathname === "/api/check-spend";
-    if (publicApi || cronEndpoint || isAuthRequest) {
+    const stripeWebhook = pathname === "/api/stripe/webhook" || pathname.startsWith("/api/stripe/webhook/");
+    if (publicApi || cronEndpoint || stripeWebhook || isAuthRequest) {
       const authorization = request.headers.get("authorization") ?? "";
       const isValidCron = cronEndpoint && Boolean(process.env.CRON_SECRET) &&
         authorization === `Bearer ${process.env.CRON_SECRET}`;
@@ -101,7 +125,7 @@ export async function proxy(request: NextRequest) {
       if (await requestBodyExceedsLimit(request)) {
         return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
       }
-      if (publicApi || isAuthRequest) return response;
+      if (publicApi || stripeWebhook || isAuthRequest) return response;
     }
   }
 
@@ -131,10 +155,15 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect the dashboard and its API surface (except the cron endpoint).
+  // Stripe webhook is public (verified via Stripe signature in the route).
+  const isStripeWebhook =
+    pathname === "/api/stripe/webhook" || pathname.startsWith("/api/stripe/webhook/");
+
+  // Protect the dashboard and its API surface (except cron + webhook).
   const isProtected =
     (pathname.startsWith("/dashboard") || pathname.startsWith("/api/")) &&
-    !isCronEndpoint;
+    !isCronEndpoint &&
+    !isStripeWebhook;
 
   if (isProtected && !user) {
     if (pathname.startsWith("/api/")) {
@@ -147,6 +176,44 @@ export async function proxy(request: NextRequest) {
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // 30-day trial wall: authenticated but expired users go to checkout.
+  // Billing endpoints + account deletion stay reachable so users can subscribe.
+  if (isProtected && user && !isBillingExemptApi(pathname)) {
+    const isDashboardPage = pathname.startsWith("/dashboard");
+    const needsEntitlement = isDashboardPage || isCoreFeatureApi(pathname);
+    if (needsEntitlement) {
+      let entitled = true;
+      try {
+        const admin = getSupabaseAdmin();
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle();
+        entitled = getEntitlement(profile as Profile | null).entitled;
+      } catch {
+        // Fail open in Proxy on transient billing-lookup failure;
+        // pages + API routes enforce strictly.
+        entitled = true;
+      }
+      if (!entitled) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            {
+              error: "Subscription required. Your 30-day trial has expired.",
+              subscribeUrl: "/subscribe",
+            },
+            { status: 402 }
+          );
+        }
+        const subscribeUrl = request.nextUrl.clone();
+        subscribeUrl.pathname = "/subscribe";
+        subscribeUrl.search = "";
+        return NextResponse.redirect(subscribeUrl);
+      }
+    }
   }
 
   return response;

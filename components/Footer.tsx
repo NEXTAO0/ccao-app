@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Github } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { CookieSettingsButton } from "@/components/CookieSettingsButton";
 
@@ -12,7 +11,7 @@ export function Footer() {
             <Logo />
           </Link>
           <p className="max-w-xs font-mono text-sm leading-relaxed text-slate-400">
-            CCAO: by NEXTAO. Open-source cloud utility.
+            CCAO: by NEXTAO. Closed-source subscription SaaS for cloud budget control.
           </p>
         </div>
 
@@ -29,9 +28,9 @@ export function Footer() {
         <FooterCol
           title="Resources"
           links={[
-            { label: "Setup guide", href: "/SETUP_GUIDE.md" },
+            { label: "Pricing", href: "/#pricing" },
+            { label: "Subscribe", href: "/subscribe" },
             { label: "Documentation", href: "/#how-it-works" },
-            { label: "GitHub", href: "https://github.com/NEXTAO/ccao", external: true },
           ]}
         />
 
@@ -48,19 +47,12 @@ export function Footer() {
       <div className="border-t border-slate-800/70">
         <div className="container-page flex flex-col items-center justify-between gap-3 py-6 text-xs sm:flex-row">
           <p className="text-slate-400">
-            CCAO: by NEXTAO. Open-source cloud utility.
+            CCAO: by NEXTAO. Closed-source SaaS. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/NEXTAO/ccao"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-zinc-400 transition hover:text-orange-400"
-              aria-label="CCAO source code on GitHub"
-            >
-              <Github className="h-4 w-4" aria-hidden="true" />
-              GitHub
-            </a>
+            <Link href="/subscribe" className="text-zinc-400 transition hover:text-orange-400">
+              Subscribe
+            </Link>
             <Link href="/privacy" className="text-zinc-400 transition hover:text-orange-400">
               Privacy
             </Link>

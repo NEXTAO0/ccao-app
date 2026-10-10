@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { encryptSecret } from "@/lib/crypto";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { checkUserEntitlement, entitlementRequiredResponse } from "@/lib/entitlementServer";
 import type { CloudProvider, GcpAccount } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -14,6 +15,13 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const getEntitlement = await checkUserEntitlement(user.id);
+  if (!getEntitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(getEntitlement.status), {
+      status: 402,
+    });
+  }
 
   const admin = getSupabaseAdmin();
   const [gcpResult, openaiResult, awsResult] = await Promise.all([
@@ -104,6 +112,13 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const postEntitlement = await checkUserEntitlement(user.id);
+  if (!postEntitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(postEntitlement.status), {
+      status: 402,
+    });
+  }
 
   let body: CreateAccountBody;
   try {

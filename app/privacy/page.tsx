@@ -46,7 +46,7 @@ export default async function PrivacyPage() {
         <div className="prose-sm mt-10 rounded-lg border border-border bg-card p-6 text-foreground sm:p-8">
           <Section title="1. Overview">
             <p>
-              CCAO (&quot;by NEXTAO&quot;) is an open-source tool that helps you monitor and control
+              CCAO (&quot;by NEXTAO&quot;) is a closed-source subscription SaaS product that helps you monitor and control
               cloud and AI spending across supported providers. This policy explains what the
               application processes and the choices available to you. Google Cloud, AWS, OpenAI,
               Supabase, Vercel, and other third parties are independent providers; CCAO is not
@@ -117,9 +117,10 @@ export default async function PrivacyPage() {
               configured email provider (Resend or your SMTP provider), and Cloudflare for
               CAPTCHA verification. Vercel Analytics and Google Analytics, when configured, load
               only after optional analytics consent.
-              Providers process data under their own terms and retention practices. For a
-              self-hosted deployment, its operator chooses these providers and is responsible for
-              their configuration.
+              Providers process data under their own terms and retention practices. The
+              SaaS deployment is operated by NEXTAO, including subscription billing via
+              Stripe (customer identifiers and subscription status are stored to enforce
+              entitlements).
             </p>
           </Section>
 

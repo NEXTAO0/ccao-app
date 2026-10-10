@@ -46,7 +46,7 @@ export default async function TermsPage() {
         <div className="mt-10 space-y-8 rounded-lg border border-border bg-card p-6 text-sm leading-relaxed text-foreground sm:p-8">
           <Section title="1. Acceptance">
             <p>
-              CCAO is open-source software by NEXTAO. Before signing in, you must agree to these
+              CCAO is a closed-source subscription SaaS product by NEXTAO. Before signing in, you must agree to these
               Terms and acknowledge the Privacy Policy. The app records the policy versions and
               acceptance timestamp against your account; it does not include your IP address or
               device fingerprint in that record. CCAO is not affiliated with Google Cloud, AWS, or
@@ -58,8 +58,8 @@ export default async function TermsPage() {
             <p>
               CCAO retrieves spend data from configured GCP, AWS, or OpenAI sources, stores
               samples, and can send alerts or attempt a configured provider action after a
-              scheduled check detects a threshold breach. The hosted deployment is configured
-              for one scheduled check per day. Self-hosted schedules may differ.
+              scheduled check detects a threshold breach. The SaaS deployment is configured
+              for one scheduled check per day.
             </p>
           </Section>
 
@@ -126,8 +126,20 @@ export default async function TermsPage() {
 
           <Section title="9. License">
             <p>
-              The source code is released under the MIT License. See the repository&apos;s
-              LICENSE file for details.
+              CCAO is proprietary closed-source software. All rights reserved by NEXTAO.
+              You are granted a limited, revocable, non-transferable right to use the
+              hosted service while your trial or paid subscription is active. Copying,
+              redistributing, or reverse-engineering the service outside permitted use
+              is prohibited.
+            </p>
+          </Section>
+
+          <Section title="10. Trials and subscriptions">
+            <p>
+              New accounts receive a 30-day free trial with full access. After the trial
+              expires, a paid subscription via Stripe is required to continue using the
+              dashboard and APIs. Unauthenticated or expired-trial requests are redirected
+              to the subscription checkout flow. See the pricing section for current plans.
             </p>
           </Section>
         </div>

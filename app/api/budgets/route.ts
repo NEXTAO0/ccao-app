@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { checkUserEntitlement, entitlementRequiredResponse } from "@/lib/entitlementServer";
 import type { Budget, CostLog, SpendSnapshot } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -21,6 +22,13 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
+  const entitlement = await checkUserEntitlement(user.id);
+  if (!entitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(entitlement.status), {
+      status: 402,
+    });
   }
 
   const { data: budgets, error } = await supabase
@@ -99,6 +107,13 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
+  const postEntitlement = await checkUserEntitlement(user.id);
+  if (!postEntitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(postEntitlement.status), {
+      status: 402,
+    });
   }
 
   let body: CreateBudgetBody;

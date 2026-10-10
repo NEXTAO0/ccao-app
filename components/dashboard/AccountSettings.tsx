@@ -34,6 +34,19 @@ export function AccountSettings({ user }: { user: User }) {
 
   return (
     <div className="mt-8 space-y-6">
+      <section className="card p-6" aria-labelledby="billing-title">
+        <h2 id="billing-title" className="text-lg font-bold text-zinc-100">Subscription &amp; billing</h2>
+        <p className="mt-2 text-sm leading-6 text-zinc-400">
+          30-day free trial included. After expiry a paid Stripe subscription is required.
+          Manage plans, payment methods, and cancellation via Secure checkout.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <a href="/subscribe" className="btn-primary">
+            Manage subscription
+          </a>
+        </div>
+      </section>
+
       <section className="card p-6" aria-labelledby="profile-title">
         <h2 id="profile-title" className="text-lg font-bold text-zinc-100">Profile</h2>
         <dl className="mt-5 grid gap-5 sm:grid-cols-2">

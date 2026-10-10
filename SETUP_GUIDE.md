@@ -26,16 +26,17 @@ end-to-end: Supabase, GCP/AWS/OpenAI provider credentials, email delivery, deplo
 
 - Node.js ≥ 20 (LTS)
 - At least one supported provider account: Google Cloud Platform, Amazon Web Services, or OpenAI
-- A [Supabase](https://supabase.com) project (free tier is fine)
+- A [Supabase](https://supabase.com) project
 - Either a [Resend](https://resend.com) account (`resend` provider) **or** any Gmail account (SMTP fallback)
-- (Optional) A [Vercel](https://vercel.com) account for one-click deployment + free cron
+- (Optional) A [Vercel](https://vercel.com) account for deployment + cron
+- A Stripe account with Checkout + Billing prices (monthly + annual) and a webhook endpoint
 
 ---
 
 ## 2. Supabase — Database & Auth
 
 ### 2.1 Create the project
-1. Go to [database.new](https://database.new) and create a free-tier project.
+1. Go to [database.new](https://database.new) and create a project.
 2. Note the **Project URL** and both the **anon** and **service_role** keys
    (Supabase Dashboard → Project Settings → API). You'll use them in `.env.local`.
 3. Enable **GitHub OAuth** and/or **Email magic links** under Dashboard → Authentication → Providers to match the sign-in options enabled in your deployment.
@@ -110,7 +111,7 @@ CCAO reads real spend from the **standard BigQuery billing export**:
 
 ## 4. Email Engine — Resend or Gmail SMTP
 
-### Option A — Resend (recommended, free)
+### Option A — Resend (recommended)
 1. Sign up at [resend.com](https://resend.com) → **Add domain** and verify it (DNS records).
 2. Create an **API key** (Resend Dashboard → API Keys) → `RESEND_API_KEY`.
 3. Set `EMAIL_FROM` to a verified address, e.g. `CCAO Alerts <alerts@yourdomain.com>`.
@@ -202,7 +203,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 
 The vulnerable endpoint is `POST/GET /api/check-spend` and **requires** header `Authorization: Bearer <CRON_SECRET>`.
 
-### On Vercel (free Hobby Cron)
+### On Vercel (Cron)
 Add a `vercel.json` at repo root (already included) and redeploy:
 
 ```json

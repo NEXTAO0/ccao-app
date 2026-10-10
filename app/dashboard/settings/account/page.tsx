@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getEntitlement } from "@/lib/subscription";
+import type { Profile } from "@/lib/types";
 import { AccountSettings } from "@/components/dashboard/AccountSettings";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -17,7 +20,21 @@ export default async function AccountSettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/dashboard/settings/account");
+
+  try {
+    const admin = getSupabaseAdmin();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!getEntitlement(profile as Profile | null).entitled) {
+      redirect("/subscribe");
+    }
+  } catch {
+    // Fail open here; Proxy + dashboard enforce the wall. Avoid locking settings.
+  }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">

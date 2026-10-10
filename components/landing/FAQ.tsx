@@ -19,11 +19,19 @@ const faqs = [
   },
   {
     q: "How often are spend checks run?",
-    a: "The hosted deployment is configured for one scheduled check per day. Self-hosted schedules can differ, and provider billing data may arrive late. CCAO is not a real-time spending guarantee.",
+    a: "The SaaS deployment is configured for one scheduled check per day. Provider billing data may arrive late. CCAO is not a real-time spending guarantee.",
   },
   {
     q: "Which cloud and AI providers are supported?",
     a: "CCAO supports GCP, AWS, and OpenAI out of the box. You connect your own API keys or service account credentials in the dashboard.",
+  },
+  {
+    q: "How does the 30-day free trial work?",
+    a: "Every new account gets 30 days of full access from signup. After the trial expires, a paid subscription via Stripe is required to keep using the dashboard and APIs. Expired accounts are redirected to subscription checkout.",
+  },
+  {
+    q: "How do subscriptions and billing work?",
+    a: "Subscriptions are billed via Stripe Checkout with monthly or annual plans. Manage upgrades, downgrades, cancellation, and payment methods in the Stripe customer portal from the Subscribe page.",
   },
 ];
 

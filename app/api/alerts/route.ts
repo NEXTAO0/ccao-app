@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { checkUserEntitlement, entitlementRequiredResponse } from "@/lib/entitlementServer";
 import type { AlertLog } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -11,6 +12,13 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const entitlement = await checkUserEntitlement(user.id);
+  if (!entitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(entitlement.status), {
+      status: 402,
+    });
+  }
 
   const url = new URL(request.url);
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 25), 1), 100);

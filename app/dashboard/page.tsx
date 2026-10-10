@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getEntitlement } from "@/lib/subscription";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
-import type { AlertLog, Budget, CostLog, SpendSnapshot } from "@/lib/types";
+import type { AlertLog, Budget, CostLog, Profile, SpendSnapshot } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -35,10 +36,21 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?next=/dashboard");
   }
 
   const admin = getSupabaseAdmin();
+
+  // Full entitlement check (Proxy does only an optimistic redirect).
+  // Unauthenticated or expired-trial users are intercepted to checkout.
+  const { data: entitlementProfile } = await admin
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!getEntitlement(entitlementProfile as Profile | null).entitled) {
+    redirect("/subscribe");
+  }
   const [
     { data: budgets },
     { data: gcpAccounts },

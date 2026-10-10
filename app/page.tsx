@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Github, Terminal } from "lucide-react";
+import { ArrowUpRight, Terminal } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import ProcessStep from "@/components/ProcessStep";
@@ -68,7 +68,7 @@ export default async function HomePage({
                 <Terminal className="h-3.5 w-3.5 text-orange-400" aria-hidden="true" />
                 <span className="text-orange-400">policy.enforcement: enabled</span>
                 <span className="text-zinc-700">·</span>
-                <span>open-source</span>
+                <span>30-day free trial · subscription required</span>
               </div>
             </div>
 
@@ -116,7 +116,7 @@ export default async function HomePage({
 
         <FAQ />
 
-        <section className="border-t border-border bg-background" aria-label="Open source call to action">
+        <section className="border-t border-border bg-background" aria-label="Start your trial call to action">
           <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 sm:flex-row sm:items-center sm:px-6 lg:px-8">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-orange-400">Ready state</p>
@@ -127,10 +127,9 @@ export default async function HomePage({
               Initialize account
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </Link>
-              <a href="https://github.com/NEXTAO/ccao" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all hover:border-orange-500/40 hover:bg-zinc-800">
-                <Github className="h-4 w-4" aria-hidden="true" />
-                GitHub
-              </a>
+              <Link href="/subscribe" className="inline-flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all hover:border-orange-500/40 hover:bg-zinc-800">
+                View plans
+              </Link>
             </div>
           </div>
         </section>

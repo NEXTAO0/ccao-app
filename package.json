@@ -2,7 +2,7 @@
   "name": "ccao",
   "version": "0.1.0",
   "private": true,
-  "description": "CCAO (Cloud Controller by NEXTAO) - open-source scheduled cloud and AI budget monitoring for GCP, AWS, and OpenAI.",
+  "description": "CCAO (Cloud Controller by NEXTAO) - closed-source SaaS for scheduled cloud and AI budget monitoring for GCP, AWS, and OpenAI. 30-day trial, subscription required.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -28,7 +28,7 @@ CCAO implements strict defense-in-depth security measures to protect user assets
 
 ## Reporting a Vulnerability
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+**Please do not report security vulnerabilities through public channels or issue trackers.**
 
 If you discover a potential vulnerability, security flaw, or credential exposure in CCAO, report it privately to our security team:
 

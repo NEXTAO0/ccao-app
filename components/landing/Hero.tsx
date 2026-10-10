@@ -15,10 +15,10 @@ export function Hero() {
         <a
           href="#pricing"
           className="mb-6 inline-flex items-center gap-2 rounded-md border border-emerald-800 bg-emerald-950/40 px-3 py-1.5 font-mono text-xs font-semibold text-emerald-300 transition hover:bg-emerald-950/70"
-          aria-label="Read about CCAO licensing and provider costs"
+          aria-label="Read about CCAO plans and 30-day free trial"
         >
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-          license: MIT / open-source
+          30-day free trial · subscription required
           <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </a>
 
@@ -41,7 +41,7 @@ export function Hero() {
         </div>
 
         <p className="mt-4 text-xs text-slate-500">
-          No app subscription checkout | Provider reporting delays may apply
+          30-day free trial · cancel anytime | Provider reporting delays may apply
         </p>
 
         <MockDashboardCard />

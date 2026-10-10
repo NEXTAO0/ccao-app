@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { checkUserEntitlement, entitlementRequiredResponse } from "@/lib/entitlementServer";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,13 @@ export async function DELETE(_request: Request, { params }: Params) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
+  const entitlement = await checkUserEntitlement(user.id);
+  if (!entitlement.entitled) {
+    return NextResponse.json(entitlementRequiredResponse(entitlement.status), {
+      status: 402,
+    });
   }
 
   const { id } = await params;

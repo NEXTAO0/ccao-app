@@ -1,9 +1,11 @@
 # CCAO — by NEXTAO
 
 > **Monitor configured cloud and AI budgets from one dashboard.**
-> CCAO is open-source software for **Google Cloud Platform (GCP), Amazon Web Services (AWS), and OpenAI**. It stores spend samples, can send configured alerts, and can attempt provider actions on scheduled checks. Provider data delays and service availability apply.
+> CCAO is a closed-source SaaS product by NEXTAO for **Google Cloud Platform (GCP), Amazon Web Services (AWS), and OpenAI**. It stores spend samples, can send configured alerts, and can attempt provider actions on scheduled checks. Provider data delays and service availability apply.
+>
+> **30-day free trial included. Paid subscription via Stripe required after trial.**
 
-![License](https://img.shields.io/badge/license-MIT-blue) ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![License](https://img.shields.io/badge/license-Proprietary-red) ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
 ---
 
@@ -20,7 +22,8 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 - **Anomaly indicators** — compares new samples against recent stored history; sufficient samples are required and results are not guaranteed detections.
 - **Configurable email alerts** — uses Resend or SMTP; provider availability and pricing apply.
 - **Supabase-backed accounts** — uses PostgreSQL, Supabase Auth, and the configured row-level security policies.
-- **Self-hostable deployment** — hosting, database, email, and provider charges depend on the operator's setup and plan.
+- **Subscription billing** — Stripe Checkout + Billing with 30-day trial enforcement via Supabase entitlement flags.
+- **SaaS deployment** — hosting, database, email, and provider charges depend on the SaaS plan.
 
 ## Tech Stack
 
@@ -31,7 +34,8 @@ it is not real-time monitoring and should not be your only cost-control mechanis
 | Database & Auth | Supabase (PostgreSQL + RLS + Auth) |
 | Cloud SDKs | Google Cloud Billing/BigQuery, AWS Cost Explorer/IAM, OpenAI Usage/Admin APIs |
 | Email | Resend API / Nodemailer (Gmail SMTP) |
-| Hosting | Vercel or a compatible self-hosted Node.js deployment |
+| Hosting | Vercel SaaS deployment |
+| Billing | Stripe Checkout (subscription mode) + Customer Portal |
 
 ## Repo Layout
 
@@ -90,9 +94,15 @@ The optional provider actions can disrupt production and may fail or be delayed.
 non-production accounts, verify provider-side behavior, scope credentials to least privilege, protect
 `CRON_SECRET` and `CRYPTO_SECRET`, and do not treat alerts or thresholds as a guarantee against charges.
 
+## Pricing
+
+New accounts include a **30-day free trial** with full access. After expiry, a
+paid Stripe subscription (monthly or annual) is required. Expired or
+unauthenticated requests to protected routes redirect to `/subscribe`.
+
 ## License
 
-MIT — free for personal and commercial use.
+Proprietary — All rights reserved by NEXTAO. See `LICENSE`.
 
 ## Attribution
 

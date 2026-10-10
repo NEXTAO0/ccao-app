@@ -14,8 +14,23 @@ create table if not exists public.profiles (
   id         uuid primary key references auth.users (id) on delete cascade,
   email      text not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  -- SaaS billing entitlements (managed server-side via Stripe webhooks).
+  stripe_customer_id text,
+  stripe_subscription_id text,
+  subscription_status text not null default 'trialing',
+  subscription_price_id text,
+  subscription_current_period_end timestamptz,
+  trial_start timestamptz not null default now(),
+  trial_end timestamptz not null default (now() + interval '30 days')
 );
+
+create index if not exists profiles_stripe_customer_id_idx
+  on public.profiles (stripe_customer_id);
+create index if not exists profiles_subscription_status_idx
+  on public.profiles (subscription_status);
+create index if not exists profiles_trial_end_idx
+  on public.profiles (trial_end);
 
 alter table public.profiles enable row level security;
 
@@ -101,16 +116,27 @@ $$;
 revoke all on function public.consume_api_rate_limit(text, integer, integer) from public, anon, authenticated;
 grant execute on function public.consume_api_rate_limit(text, integer, integer) to service_role;
 
--- Keeps `profiles` in sync with new auth users.
+-- Keeps `profiles` in sync with new auth users (30-day free trial).
 create function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email)
-  values (new.id, coalesce(new.email, ''))
-  on conflict (id) do nothing;
+  insert into public.profiles (
+    id, email, subscription_status,
+    trial_start, trial_end
+  )
+  values (
+    new.id,
+    coalesce(new.email, ''),
+    'trialing',
+    now(),
+    now() + interval '30 days'
+  )
+  on conflict (id) do update set
+    trial_start = coalesce(public.profiles.trial_start, excluded.trial_start),
+    trial_end = coalesce(public.profiles.trial_end, excluded.trial_end);
   return new;
 end;
 $$;
@@ -348,3 +374,44 @@ create trigger gcp_accounts_set_updated_at before update on public.gcp_accounts
 drop trigger if exists budgets_set_updated_at on public.budgets;
 create trigger budgets_set_updated_at before update on public.budgets
   for each row execute function public.set_updated_at();
+
+-- ============================================================
+-- SaaS entitlement helper (mirrored in migrations/20261010_subscription_billing.sql)
+-- ============================================================
+create or replace function public.is_user_entitled(p_user_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_profile public.profiles%rowtype;
+begin
+  select * into v_profile from public.profiles where id = p_user_id;
+  if not found then
+    return false;
+  end if;
+
+  if v_profile.subscription_status in ('active', 'trialing')
+     and v_profile.subscription_current_period_end is not null
+     and v_profile.subscription_current_period_end > now() then
+    return true;
+  end if;
+
+  if v_profile.subscription_status in ('active', 'trialing')
+     and v_profile.subscription_current_period_end is null
+     and v_profile.trial_end > now() then
+    return true;
+  end if;
+
+  if v_profile.trial_end > now()
+     and v_profile.subscription_status in ('trialing', 'active') then
+    return true;
+  end if;
+
+  return false;
+end;
+$$;
+
+revoke all on function public.is_user_entitled(uuid) from public, anon, authenticated;
+grant execute on function public.is_user_entitled(uuid) to service_role;

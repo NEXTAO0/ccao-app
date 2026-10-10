@@ -78,6 +78,9 @@ export function DashboardClient({
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Link href="/subscribe" className="btn-secondary" aria-label="Manage subscription and billing">
+              Billing
+            </Link>
             <Link href="/dashboard/settings/account" className="btn-secondary" aria-label="Open account settings">
               <Settings className="h-4 w-4" aria-hidden="true" />
               Account settings
