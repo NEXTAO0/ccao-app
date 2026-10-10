@@ -63,6 +63,12 @@ export function Footer() {
             <Link href="/terms" className="text-zinc-400 transition hover:text-orange-400">
               Terms
             </Link>
+            <a
+              href="mailto:ccao@nextao.site"
+              className="text-zinc-400 transition hover:text-orange-400"
+            >
+              Contact
+            </a>
             <CookieSettingsButton />
           </div>
         </div>

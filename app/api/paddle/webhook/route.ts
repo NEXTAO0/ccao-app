@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { EventName } from "@paddle/paddle-node-sdk";
 import { getPaddle } from "@/lib/paddle";
+import { getWebhookClientIp, isPaddleWebhookIp } from "@/lib/paddleIps";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
@@ -157,6 +158,17 @@ export async function POST(request: Request) {
   }
   if (!secret) {
     return NextResponse.json({ error: "Webhooks not configured." }, { status: 503 });
+  }
+
+  // Defense in depth: accept deliveries only from Paddle's live IPs
+  // (source of truth: https://api.paddle.com/ips). Signature verification
+  // below remains the real authentication; an unreachable IP list fails
+  // open so billing sync is never blocked by it.
+  const clientIp = getWebhookClientIp(request.headers);
+  const ipAllowed = await isPaddleWebhookIp(clientIp);
+  if (ipAllowed === false) {
+    console.error("[paddle/webhook] rejected non-Paddle source IP.");
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
   try {
